@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import Button from './src/index.vue';
+import Button from './src/index.vue'
 
-export { default as config } from './src/formConfig';
-export { default as value } from './src/initValue';
+export { default as config } from './src/formConfig'
+export { default as value } from './src/initValue'
 
-export default Button;
+export default Button

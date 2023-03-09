@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-import Button from './button';
-import Container from './container';
-import Img from './img';
-import Overlay from './overlay';
-import Page from './page';
-import Qrcode from './qrcode';
-import Text from './text';
+import Button from './button'
+import Container from './container'
+import Img from './img'
+import Overlay from './overlay'
+import Page from './page'
+import Qrcode from './qrcode'
+import Text from './text'
 
 const ui: Record<string, any> = {
   page: Page,
@@ -31,7 +31,7 @@ const ui: Record<string, any> = {
   text: Text,
   img: Img,
   qrcode: Qrcode,
-  overlay: Overlay,
-};
+  overlay: Overlay
+}
 
-export default ui;
+export default ui

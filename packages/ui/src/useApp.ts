@@ -16,25 +16,25 @@
  * limitations under the License.
  */
 
-import { getCurrentInstance, inject, onMounted, onUnmounted } from 'vue';
+import { getCurrentInstance, inject, onMounted, onUnmounted } from 'vue'
 
-import Core from '@tmagic/core';
+import Core from '@tmagic/core'
 
 export default (props: any) => {
-  const app: Core | undefined = inject('app');
-  const node = app?.page?.getNode(props.config.id);
+  const app: Core | undefined = inject('app')
+  const node = app?.page?.getNode(props.config.id)
 
-  const vm = getCurrentInstance()?.proxy;
+  const vm = getCurrentInstance()?.proxy
 
-  node?.emit('created', vm);
+  node?.emit('created', vm)
 
   onMounted(() => {
-    node?.emit('mounted', vm);
-  });
+    node?.emit('mounted', vm)
+  })
 
   onUnmounted(() => {
-    node?.emit('destroy', vm);
-  });
+    node?.emit('destroy', vm)
+  })
 
-  return app;
-};
+  return app
+}

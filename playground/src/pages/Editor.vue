@@ -32,60 +32,55 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, toRaw } from 'vue';
-import { useRouter } from 'vue-router';
-import { Coin, Connection, Document } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import serialize from 'serialize-javascript';
+import { computed, ref, toRaw } from 'vue'
+import { useRouter } from 'vue-router'
+import { Coin, Connection, Document } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import serialize from 'serialize-javascript'
 
-import { editorService, MenuBarData, MoveableOptions, TMagicEditor } from '@tmagic/editor';
-import type { MContainer, MNode } from '@tmagic/schema';
-import { NodeType } from '@tmagic/schema';
-import { CustomizeMoveableOptionsCallbackConfig } from '@tmagic/stage';
-import { asyncLoadJs } from '@tmagic/utils';
+import { editorService, MenuBarData, MoveableOptions, TMagicEditor } from '@tmagic/editor'
+import type { MContainer, MNode } from '@tmagic/schema'
+import { NodeType } from '@tmagic/schema'
+import { CustomizeMoveableOptionsCallbackConfig } from '@tmagic/stage'
+import { asyncLoadJs } from '@tmagic/utils'
 
-import DeviceGroup from '../components/DeviceGroup.vue';
-import componentGroupList from '../configs/componentGroupList';
-import dsl from '../configs/dsl';
+import DeviceGroup from '../components/DeviceGroup.vue'
+import componentGroupList from '../configs/componentGroupList'
+import dsl from '../configs/dsl'
 
-const { VITE_RUNTIME_PATH, VITE_ENTRY_PATH } = import.meta.env;
+const { VITE_RUNTIME_PATH, VITE_ENTRY_PATH } = import.meta.env
 
-const runtimeUrl = `${VITE_RUNTIME_PATH}/playground/index.html`;
-const router = useRouter();
-const editor = ref<InstanceType<typeof TMagicEditor>>();
-const previewVisible = ref(false);
-const value = ref(dsl);
-const defaultSelected = ref(dsl.items[0].id);
-const propsValues = ref<Record<string, any>>({});
-const propsConfigs = ref<Record<string, any>>({});
-const eventMethodList = ref<Record<string, any>>({});
+const runtimeUrl = `${VITE_RUNTIME_PATH}/playground/index.html`
+const router = useRouter()
+const editor = ref<InstanceType<typeof TMagicEditor>>()
+const previewVisible = ref(false)
+const value = ref(dsl)
+const defaultSelected = ref(dsl.items[0].id)
+const propsValues = ref<Record<string, any>>({})
+const propsConfigs = ref<Record<string, any>>({})
+const eventMethodList = ref<Record<string, any>>({})
 const stageRect = ref({
   width: 375,
-  height: 817,
-});
+  height: 817
+})
 
 const previewUrl = computed(
-  () => `${VITE_RUNTIME_PATH}/page/index.html?localPreview=1&page=${editor.value?.editorService.get('page')?.id}`,
-);
+  () => `${VITE_RUNTIME_PATH}/page/index.html?localPreview=1&page=${editor.value?.editorService.get('page')?.id}`
+)
 
 const menu: MenuBarData = {
-  left: [
-    {
-      type: 'text',
-      text: '魔方',
-    },
-  ],
+  left: [{ type: 'text', text: '魔方2' }],
   center: ['delete', 'undo', 'redo', 'guides', 'rule', 'zoom'],
   right: [
     {
       type: 'button',
       text: 'Form Playground',
-      handler: () => router.push('form'),
+      handler: () => router.push('form')
     },
     {
       type: 'button',
       text: 'Table Playground',
-      handler: () => router.push('table'),
+      handler: () => router.push('table')
     },
     '/',
     {
@@ -98,77 +93,77 @@ const menu: MenuBarData = {
             await ElMessageBox.confirm('有修改未保存，是否先保存再预览', '提示', {
               confirmButtonText: '保存并预览',
               cancelButtonText: '预览',
-              type: 'warning',
-            });
-            save();
-            ElMessage.success('保存成功');
+              type: 'warning'
+            })
+            save()
+            ElMessage.success('保存成功')
           } catch (e) {
-            console.error(e);
+            console.error(e)
           }
         }
-        previewVisible.value = true;
-      },
+        previewVisible.value = true
+      }
     },
     {
       type: 'button',
       text: '保存',
       icon: Coin,
       handler: () => {
-        save();
-        ElMessage.success('保存成功');
-      },
+        save()
+        ElMessage.success('保存成功')
+      }
     },
     '/',
     {
       type: 'button',
       icon: Document,
       tooltip: '源码',
-      handler: (service) => service?.uiService.set('showSrc', !service?.uiService.get('showSrc')),
-    },
-  ],
-};
+      handler: (service) => service?.uiService.set('showSrc', !service?.uiService.get('showSrc'))
+    }
+  ]
+}
 
 const moveableOptions = (config?: CustomizeMoveableOptionsCallbackConfig): MoveableOptions => {
-  const options: MoveableOptions = {};
+  const options: MoveableOptions = {}
 
-  const id = config?.targetElId;
-  if (!id || !editor.value) return options;
+  const id = config?.targetElId
+  if (!id || !editor.value) return options
 
-  const node = editor.value.editorService.getNodeById(id);
+  const node = editor.value.editorService.getNodeById(id)
 
-  if (!node) return options;
+  if (!node) return options
 
-  const isPage = node.type === NodeType.PAGE;
+  const isPage = node.type === NodeType.PAGE
 
-  options.draggable = !isPage;
-  options.resizable = !isPage;
-  options.rotatable = !isPage;
+  options.draggable = !isPage
+  options.resizable = !isPage
+  options.rotatable = !isPage
 
-  return options;
-};
+  return options
+}
 
 const save = () => {
   localStorage.setItem(
     'magicDSL',
     serialize(toRaw(value.value), {
       space: 2,
-      unsafe: true,
-    }).replace(/"(\w+)":\s/g, '$1: '),
-  );
-  editor.value?.editorService.resetModifiedNodeId();
-};
+      unsafe: true
+    }).replace(/"(\w+)":\s/g, '$1: ')
+  )
+  editor.value?.editorService.resetModifiedNodeId()
+}
 
 asyncLoadJs(`${VITE_ENTRY_PATH}/config/index.umd.cjs`).then(() => {
-  propsConfigs.value = (globalThis as any).magicPresetConfigs;
-});
+  propsConfigs.value = (globalThis as any).magicPresetConfigs
+})
 asyncLoadJs(`${VITE_ENTRY_PATH}/value/index.umd.cjs`).then(() => {
-  propsValues.value = (globalThis as any).magicPresetValues;
-});
+  propsValues.value = (globalThis as any).magicPresetValues
+})
 asyncLoadJs(`${VITE_ENTRY_PATH}/event/index.umd.cjs`).then(() => {
-  eventMethodList.value = (globalThis as any).magicPresetEvents;
-});
+  eventMethodList.value = (globalThis as any).magicPresetEvents
+})
 
-save();
+save()
 
 editorService.usePlugin({
   beforeDoAdd: (config: MNode, parent?: MContainer | null) => {
@@ -176,15 +171,15 @@ editorService.usePlugin({
       config.style = {
         ...config.style,
         left: 0,
-        top: 0,
-      };
+        top: 0
+      }
 
-      return [config, editorService.get('page')];
+      return [config, editorService.get('page')]
     }
 
-    return [config, parent];
-  },
-});
+    return [config, parent]
+  }
+})
 </script>
 
 <style lang="scss">

@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType } from 'vue'
 
-import { MenuButton } from '@tmagic/editor';
+import { MenuButton } from '@tmagic/editor'
 
 export default defineComponent({
   name: 'nav-menu',
@@ -24,10 +24,10 @@ export default defineComponent({
   props: {
     data: {
       type: Array as PropType<MenuButton[]>,
-      default: () => [],
-    },
-  },
-});
+      default: () => []
+    }
+  }
+})
 </script>
 
 <style lang="scss">
