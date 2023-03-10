@@ -19,6 +19,7 @@
 import Button from './button'
 import Container from './container'
 import Img from './img'
+import News from './news'
 import Overlay from './overlay'
 import Page from './page'
 import Qrcode from './qrcode'
@@ -31,7 +32,8 @@ const ui: Record<string, any> = {
   text: Text,
   img: Img,
   qrcode: Qrcode,
-  overlay: Overlay
+  overlay: Overlay,
+  news: News
 }
 
 export default ui

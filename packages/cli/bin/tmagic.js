@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { cli } = require('../lib');
+const { cli } = require('../lib')
 
 cli({
   source: process.cwd(),
@@ -13,6 +13,6 @@ cli({
   npmConfig: {
     client: 'npm',
     autoInstall: true,
-    keepPackageJsonClean: true,
-  },
-});
+    keepPackageJsonClean: true
+  }
+})
