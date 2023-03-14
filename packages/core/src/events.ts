@@ -87,6 +87,19 @@ export const bindCommonEventListener = (app: App) => {
     true,
   );
 };
+export const bindCommonEventListenerOfMini = (app: App) => {
+  window.document.body.addEventListener('click', (e: any) => {
+    commonClickEventHandler(app, 'click', e);
+  });
+
+  window.document.body.addEventListener(
+    'click',
+    (e: any) => {
+      commonClickEventHandler(app, 'click:capture', e);
+    },
+    true,
+  );
+};
 
 export const triggerCommonMethod = (methodName: string, node: Node) => {
   const { instance } = node;

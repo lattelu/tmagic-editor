@@ -40,7 +40,7 @@ const Img: React.FC<ImgProps> = ({ config }) => {
 
   return (
     <img
-      className="magic-ui-img"
+      className='magic-ui-img'
       style={app.transformStyle(config.style || {})}
       id={`${config.id}`}
       src={config.src}

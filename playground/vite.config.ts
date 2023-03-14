@@ -16,29 +16,29 @@
  * limitations under the License.
  */
 
-import path from 'path'
+import path from 'path';
 
-import { defineConfig } from 'vite'
-import legacy from '@vitejs/plugin-legacy'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import AutoImport from 'unplugin-auto-import/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import Components from 'unplugin-vue-components/vite'
+import { defineConfig } from 'vite';
+import legacy from '@vitejs/plugin-legacy';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import AutoImport from 'unplugin-auto-import/vite';
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import Components from 'unplugin-vue-components/vite';
 
 export default defineConfig({
   plugins: [
     AutoImport({
-      resolvers: [ElementPlusResolver()]
+      resolvers: [ElementPlusResolver()],
     }),
     Components({
-      resolvers: [ElementPlusResolver()]
+      resolvers: [ElementPlusResolver()],
     }),
     vue(),
     vueJsx(),
     legacy({
-      targets: ['defaults', 'not IE 11']
-    })
+      targets: ['defaults', 'not IE 11'],
+    }),
   ],
 
   base: '/tmagic-editor/playground/',
@@ -47,7 +47,7 @@ export default defineConfig({
     alias: [
       {
         find: /^@tmagic\/editor\/src\/theme\/index.scss/,
-        replacement: path.join(__dirname, '../packages/editor/src/theme/index.scss')
+        replacement: path.join(__dirname, '../packages/editor/src/theme/index.scss'),
       },
       { find: /^@tmagic\/core/, replacement: path.join(__dirname, '../packages/core/src/index.ts') },
       { find: /^@tmagic\/editor/, replacement: path.join(__dirname, '../packages/editor/src/index.ts') },
@@ -59,24 +59,24 @@ export default defineConfig({
       { find: /^@tmagic\/design/, replacement: path.join(__dirname, '../packages/design/src/index.ts') },
       {
         find: /^@tmagic\/element-plus-adapter/,
-        replacement: path.join(__dirname, '../packages/element-plus-adapter/src/index.ts')
+        replacement: path.join(__dirname, '../packages/element-plus-adapter/src/index.ts'),
       },
       { find: /^vue$/, replacement: path.join(__dirname, 'node_modules/vue/dist/vue.esm-bundler.js') },
-      { find: /^element-plus$/, replacement: path.join(__dirname, 'node_modules/element-plus/es/index.mjs') }
-    ]
+      { find: /^element-plus$/, replacement: path.join(__dirname, 'node_modules/element-plus/es/index.mjs') },
+    ],
   },
 
   optimizeDeps: {
     esbuildOptions: {
       define: {
-        global: 'globalThis'
-      }
-    }
+        global: 'globalThis',
+      },
+    },
   },
 
   server: {
     fs: {
-      strict: false
+      strict: false,
     },
     host: '0.0.0.0',
     port: 8098,
@@ -85,17 +85,17 @@ export default defineConfig({
       '^/tmagic-editor/playground/runtime': {
         target: 'http://127.0.0.1:8078',
         changeOrigin: true,
-        prependPath: false
-      }
+        prependPath: false,
+      },
     },
-    open: '/tmagic-editor/playground/'
+    open: '/tmagic-editor/playground/',
   },
 
   preview: {
-    proxy: {}
+    proxy: {},
   },
 
   build: {
-    sourcemap: true
-  }
-})
+    sourcemap: true,
+  },
+});

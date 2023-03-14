@@ -22,6 +22,6 @@ export default {
   multiple: true,
   style: {
     width: '100',
-    height: 'auto'
-  }
-}
+    height: 'auto',
+  },
+};

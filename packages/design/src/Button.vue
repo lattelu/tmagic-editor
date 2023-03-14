@@ -5,24 +5,24 @@
 </template>
 
 <script setup lang="ts" name="TMButton">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-import { getConfig } from './config'
+import { getConfig } from './config';
 
 const props = defineProps<{
-  type?: string
-  size?: 'large' | 'default' | 'small'
-  text?: boolean
-  icon?: any
-}>()
+  type?: string;
+  size?: 'large' | 'default' | 'small';
+  text?: boolean;
+  icon?: any;
+}>();
 
-const uiComponent = getConfig('components').button
+const uiComponent = getConfig('components').button;
 
-const uiProps = computed(() => uiComponent.props(props))
+const uiProps = computed(() => uiComponent.props(props));
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click']);
 
 const clickHandler = (...args: any[]) => {
-  emit('click', ...args)
-}
+  emit('click', ...args);
+};
 </script>

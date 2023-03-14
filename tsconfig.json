@@ -21,6 +21,7 @@
       "@tmagic/*": ["packages/*/src"],
       "@editor/*": ["packages/editor/src/*"],
       "@form/*": ["packages/form/src/*"],
+      "@mini/*": ["tmagic-mini-program/src/*"],
     },
     "types": [
       "node",
@@ -31,4 +32,5 @@
     "**/dist/**/*",
     "**/node_modules/**/*",
   ],
+  
 }

@@ -16,232 +16,232 @@
  * limitations under the License.
  */
 
-import { ComponentPublicInstance } from 'vue'
+import { ComponentPublicInstance } from 'vue';
 
 /* style */
 export type PartCSSStyle = {
-  [key in keyof CSSStyleDeclaration]?: string | number
-}
-export type CSSStyleKey = keyof CSSStyleDeclaration
-export type CanModifyCSSStyleKey = Exclude<CSSStyleKey, 'length' | 'parentRule'>
-export type StyleCfg = ((p1: any, p2: any) => PartCSSStyle) | PartCSSStyle
+  [key in keyof CSSStyleDeclaration]?: string | number;
+};
+export type CSSStyleKey = keyof CSSStyleDeclaration;
+export type CanModifyCSSStyleKey = Exclude<CSSStyleKey, 'length' | 'parentRule'>;
+export type StyleCfg = ((p1: any, p2: any) => PartCSSStyle) | PartCSSStyle;
 
 /* event */
 export interface MEvent {
-  name: string
-  to: number | string
-  method: string
+  name: string;
+  to: number | string;
+  method: string;
 }
 export interface MEventInMap {
-  from: number | string
-  to: number | string
-  method: string
+  from: number | string;
+  to: number | string;
+  method: string;
 }
-export type MEventMapType = Record<string, MEventInMap[]>
-export type MEventQueueMapType = Record<string | number, MEventInMap[]>
+export type MEventMapType = Record<string, MEventInMap[]>;
+export type MEventQueueMapType = Record<string | number, MEventInMap[]>;
 export interface MEventBus {
-  $on: (...args: any) => void
-  $off: (...args: any) => void
-  $once: (...args: any) => void
-  $emit: (...args: any) => void
+  $on: (...args: any) => void;
+  $off: (...args: any) => void;
+  $once: (...args: any) => void;
+  $emit: (...args: any) => void;
 }
 
 /* component */
 export interface MComponent {
-  type: string
-  id?: number | string
-  name?: string
-  style?: StyleCfg
-  disabledStyle?: StyleCfg
-  className?: string | ((p1: any, p2: any) => string)
-  display?: boolean | ((p1: any, p2: any) => boolean)
-  html?: string
-  created?: (p1: any, p2: any) => Promise<any>
-  mounted?: (p1: any, p2: any) => Promise<any>
-  renderType?: number
-  events?: MEvent[]
+  type: string;
+  id?: number | string;
+  name?: string;
+  style?: StyleCfg;
+  disabledStyle?: StyleCfg;
+  className?: string | ((p1: any, p2: any) => string);
+  display?: boolean | ((p1: any, p2: any) => boolean);
+  html?: string;
+  created?: (p1: any, p2: any) => Promise<any>;
+  mounted?: (p1: any, p2: any) => Promise<any>;
+  renderType?: number;
+  events?: MEvent[];
 }
 export interface MComponentProps {
-  config: MComponent
-  model: Object
+  config: MComponent;
+  model: Object;
 }
 export type MComponentInstance =
   | ComponentPublicInstance<
       MComponentProps,
       {},
       {
-        [propName: string]: any
-        disabled: boolean
+        [propName: string]: any;
+        disabled: boolean;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* container */
 export interface MContainer extends MComponent {
-  items?: MComponent[] | MContainer[]
+  items?: MComponent[] | MContainer[];
 }
 export interface MContainerProps {
-  config: MContainer
-  model: Object
+  config: MContainer;
+  model: Object;
 }
 export type MContainerInstance =
   | ComponentPublicInstance<
       MContainerProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* page */
 export interface MPage extends MContainer {
-  title?: string
-  cssFile?: string
+  title?: string;
+  cssFile?: string;
 }
 export interface MPageProps {
-  config: MPage
+  config: MPage;
 }
 export type MPageInstance =
   | ComponentPublicInstance<
       MPageProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* pop */
 export interface MPop extends MContainer {
-  activate: () => void
-  maskClose: boolean
+  activate: () => void;
+  maskClose: boolean;
 }
 export interface MPopProps {
-  config: MPop
-  model: Object
-  fillWithSlot: boolean
-  beforeOpen: (p1: MPopInstance, p2: any) => boolean
-  beforeClose: (p1: MPopInstance) => boolean
+  config: MPop;
+  model: Object;
+  fillWithSlot: boolean;
+  beforeOpen: (p1: MPopInstance, p2: any) => boolean;
+  beforeClose: (p1: MPopInstance) => boolean;
 }
 export interface MPopObj {
-  name: string
-  options: object
+  name: string;
+  options: object;
 }
 export type MPopInstance =
   | ComponentPublicInstance<
       MPopProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* app */
 export interface MApp extends MComponent {
-  items: MPage[]
+  items: MPage[];
 }
 export interface MAppProps {
-  config: [MApp]
-  pageConfig: MPage
+  config: [MApp];
+  pageConfig: MPage;
 }
 export enum MAppElementType {
   pages = 'pages',
   containers = 'containers',
   components = 'components',
-  pops = 'pops'
+  pops = 'pops',
 }
 export type MAppInstance =
   | ComponentPublicInstance<
       MAppProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
-export type MCommonInstance = MContainerInstance | MPageInstance | MComponentInstance | MPopInstance
+  | undefined;
+export type MCommonInstance = MContainerInstance | MPageInstance | MComponentInstance | MPopInstance;
 
 /* tabs */
-export type MTabs = MContainer
+export type MTabs = MContainer;
 export interface MTabsProps {
-  config: MTabs
-  model: Object
+  config: MTabs;
+  model: Object;
 }
 export type MTabsInstance =
   | ComponentPublicInstance<
       MTabsProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* text */
 export interface MText extends MComponent {
-  text?: string | ((p1: any, p2: any) => string)
-  disabledText?: string | ((p1: any, p2: any) => string)
-  multiple?: boolean
+  text?: string | ((p1: any, p2: any) => string);
+  disabledText?: string | ((p1: any, p2: any) => string);
+  multiple?: boolean;
 }
 export interface MTextProps {
-  config: MText
-  model: Object
-  vars: Object
+  config: MText;
+  model: Object;
+  vars: Object;
 }
 export type MTextInstance =
   | ComponentPublicInstance<
       MTextProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
 /* button */
 export interface MButton extends MComponent {
-  preAction?: (p1: any, p2: any) => string
-  postAction?: (p1: any, p2: any) => string
-  text?: string | ((p1: any, p2: any) => string)
-  disabledText?: string | ((p1: any, p2: any) => string)
+  preAction?: (p1: any, p2: any) => string;
+  postAction?: (p1: any, p2: any) => string;
+  text?: string | ((p1: any, p2: any) => string);
+  disabledText?: string | ((p1: any, p2: any) => string);
 }
 export interface MButtonProps {
-  config: MButton
-  model: Object
+  config: MButton;
+  model: Object;
 }
 export type MButtonInstance =
   | ComponentPublicInstance<
       MButtonProps,
       {},
       {
-        [propName: string]: any
+        [propName: string]: any;
       }
     >
   | null
-  | undefined
+  | undefined;
 
-export type ArrayOneOrMore = { 0: string } & string[]
+export type ArrayOneOrMore = { 0: string } & string[];
 
 export interface MImg {
-  src: string
-  url: string
+  src: string;
+  url: string;
 }
 
 export interface MQrcode {
-  url: string
+  url: string;
 }
 
 export interface MPop extends MComponent {
-  items?: MComponent[] | MContainer[]
-  closeButtonStyle?: any
-  closeButton?: boolean
+  items?: MComponent[] | MContainer[];
+  closeButtonStyle?: any;
+  closeButton?: boolean;
 }

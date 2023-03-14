@@ -73,7 +73,7 @@ const Overlay: React.FC<OverlayProps> = ({ config }) => {
   return (
     <MagicUiComp
       id={config.id}
-      className="magic-ui-overlay"
+      className='magic-ui-overlay'
       config={{ style: config.style, items: config.items }}
     ></MagicUiComp>
   );

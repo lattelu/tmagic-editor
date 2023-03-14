@@ -18,9 +18,9 @@
 
 export default (props: any) => ({
   show: () => {
-    props.config.style.display = 'initial'
+    props.config.style.display = 'initial';
   },
   hide: () => {
-    props.config.style.display = 'none'
-  }
-})
+    props.config.style.display = 'none';
+  },
+});

@@ -44,6 +44,6 @@ module.exports = {
     /**
      * prettier 格式错误
      */
-    'prettier/prettier': ['warn']
-  }
-}
+    'prettier/prettier': ['warn'],
+  },
+};

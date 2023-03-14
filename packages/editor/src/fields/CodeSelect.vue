@@ -22,29 +22,29 @@
 </template>
 
 <script lang="ts" setup name="MEditorCodeSelect">
-import { computed, inject, watch } from 'vue'
-import { Edit, View } from '@element-plus/icons-vue'
-import { isEmpty, map } from 'lodash-es'
+import { computed, inject, watch } from 'vue';
+import { Edit, View } from '@element-plus/icons-vue';
+import { isEmpty, map } from 'lodash-es';
 
-import { createValues, FormItem, FormState, TableConfig } from '@tmagic/form'
-import { HookType, Id } from '@tmagic/schema'
+import { createValues, FormItem, FormState, TableConfig } from '@tmagic/form';
+import { HookType, Id } from '@tmagic/schema';
 
-import Icon from '../components/Icon.vue'
-import { CodeParamStatement, HookData, Services } from '../type'
-const services = inject<Services>('services')
-const mForm = inject<FormState>('mForm')
-const emit = defineEmits(['change'])
+import Icon from '../components/Icon.vue';
+import { CodeParamStatement, HookData, Services } from '../type';
+const services = inject<Services>('services');
+const mForm = inject<FormState>('mForm');
+const emit = defineEmits(['change']);
 
 const props = defineProps<{
   config: {
-    tableConfig?: TableConfig
-  }
-  model: any
-  prop: string
-  name: string
-  size: 'mini' | 'small' | 'medium'
-}>()
-const codeDsl = computed(() => services?.codeBlockService.getCodeDslSync())
+    tableConfig?: TableConfig;
+  };
+  model: any;
+  prop: string;
+  name: string;
+  size: 'mini' | 'small' | 'medium';
+}>();
+const codeDsl = computed(() => services?.codeBlockService.getCodeDslSync());
 
 const tableConfig = computed<FormItem>(() => {
   const defaultConfig = {
@@ -63,38 +63,38 @@ const tableConfig = computed<FormItem>(() => {
             return map(codeDsl.value, (value, key) => ({
               text: `${value.name}（${key}）`,
               label: `${value.name}（${key}）`,
-              value: key
-            }))
+              value: key,
+            }));
           }
-          return []
+          return [];
         },
         onChange: (formState: any, codeId: Id, { model }: any) => {
           // 参数的items是根据函数生成的，当codeId变化后修正model的值，避免写入其他codeId的params
-          model.params = {}
-        }
+          model.params = {};
+        },
       },
       {
         name: 'params',
         label: '参数',
         defaultValue: {},
         itemsFunction: (row: HookData) => {
-          const paramsConfig = getParamsConfig(row.codeId)
+          const paramsConfig = getParamsConfig(row.codeId);
           // 如果参数没有填值，则使用createValues补全空值
           if (isEmpty(row.params) || !row.params) {
-            createValues(mForm, paramsConfig, {}, row.params)
+            createValues(mForm, paramsConfig, {}, row.params);
           }
-          return paramsConfig
-        }
-      }
-    ]
-  }
+          return paramsConfig;
+        },
+      },
+    ],
+  };
   return {
     ...defaultConfig,
-    ...props.config.tableConfig
-  }
-})
+    ...props.config.tableConfig,
+  };
+});
 
-const editable = computed(() => services?.codeBlockService.getEditStatus())
+const editable = computed(() => services?.codeBlockService.getEditStatus());
 
 watch(
   () => props.model[props.name],
@@ -104,31 +104,31 @@ watch(
       // 空值或者空数组
       props.model[props.name] = {
         hookType: HookType.CODE,
-        hookData: []
-      }
+        hookData: [],
+      };
     }
   },
   {
-    immediate: true
-  }
-)
+    immediate: true,
+  },
+);
 
 const changeHandler = async () => {
-  emit('change', props.model[props.name])
-}
+  emit('change', props.model[props.name]);
+};
 
 const getParamsConfig = (codeId: Id): CodeParamStatement[] => {
-  if (!codeDsl.value) return []
-  const paramStatements = codeDsl.value[codeId]?.params
-  if (isEmpty(paramStatements)) return []
+  if (!codeDsl.value) return [];
+  const paramStatements = codeDsl.value[codeId]?.params;
+  if (isEmpty(paramStatements)) return [];
   return paramStatements.map((paramState: CodeParamStatement) => ({
     labelWidth: '100px',
     text: paramState.name,
-    ...paramState
-  }))
-}
+    ...paramState,
+  }));
+};
 
 const editCode = (codeId: Id) => {
-  services?.codeBlockService.setCodeEditorContent(true, codeId)
-}
+  services?.codeBlockService.setCodeEditorContent(true, codeId);
+};
 </script>

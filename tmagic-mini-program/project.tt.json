@@ -1,0 +1,13 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "mini-prgram",
+  "description": "taro 小程序低代码runtime",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "miniprogram"
+}

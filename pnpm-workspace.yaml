@@ -2,3 +2,4 @@ packages:
   - 'packages/*'
   - 'playground'
   - 'runtime/*'
+  - 'tmagic-mini-program'

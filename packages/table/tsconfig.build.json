@@ -5,6 +5,7 @@
     "declaration": true,
     "declarationDir": "types",
     "forceConsistentCasingInFileNames": true,
+    "preserveSymlinks":true,
     "paths": {},
   },
   "include": [

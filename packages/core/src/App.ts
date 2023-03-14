@@ -29,7 +29,7 @@ import { fillBackgroundImage, isNumber, style2Obj } from './utils';
 interface AppOptionsConfig {
   ua?: string;
   config?: MApp;
-  platform?: 'editor' | 'mobile' | 'tv' | 'pc';
+  platform?: 'editor' | 'mobile' | 'tv' | 'pc' | 'mini';
   jsEngine?: 'browser' | 'hippy';
   designWidth?: number;
   curPage?: Id;
@@ -59,7 +59,6 @@ class App extends EventEmitter {
 
   constructor(options: AppOptionsConfig) {
     super();
-
     this.env = new Env(options.ua);
     // 代码块描述内容在dsl codeBlocks字段
     this.codeDsl = options.config?.codeBlocks;
@@ -87,8 +86,9 @@ class App extends EventEmitter {
     }
 
     options.config && this.setConfig(options.config, options.curPage);
-
-    bindCommonEventListener(this);
+    if (this.platform !== 'mini') {
+      bindCommonEventListener(this);
+    }
   }
 
   /**
@@ -111,6 +111,9 @@ class App extends EventEmitter {
     }
 
     const whiteList = ['zIndex', 'opacity', 'fontWeight'];
+    console.log(this.platform);
+    const pxTransform =
+      this.platform !== 'mini' ? (value: number) => `${value / 100}rem` : (value: number) => `${value * 2}rpx`;
     Object.entries(styleObj).forEach(([key, value]) => {
       if (key === 'backgroundImage') {
         value && (results[key] = fillBackgroundImage(value));
@@ -126,7 +129,7 @@ class App extends EventEmitter {
           .join(' ');
         results[key] = !values.trim() ? 'none' : values;
       } else if (!whiteList.includes(key) && value && /^[-]?[0-9]*[.]?[0-9]*$/.test(value)) {
-        results[key] = `${value / 100}rem`;
+        results[key] = pxTransform(value);
       } else {
         results[key] = value;
       }
