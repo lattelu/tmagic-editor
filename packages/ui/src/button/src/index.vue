@@ -1,5 +1,5 @@
 <template>
-  <button class="magic-ui-button" @click="clickHandler" mark="button">
+  <button class="magic-ui-button" @click="clickHandler">
     <slot>
       <magic-ui-text :config="textConfig"></magic-ui-text>
     </slot>
@@ -24,7 +24,7 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    useApp(props);
+    const app = useApp(props);
     const vm: MButtonInstance = getCurrentInstance()?.proxy as MButtonInstance;
     const actions = reactive<Function[]>([]);
     const actualActions = computed(() => [
@@ -35,12 +35,16 @@ export default defineComponent({
     function pushAction(action: Function): void {
       actions.push(action);
     }
-    async function clickHandler(): Promise<void> {
-      console.log('actualActions', actualActions.value);
+    async function clickHandler(event: any): Promise<void> {
+      console.log('%c Line:40 🌰 props.config', 'color:#b03734', props.config);
+      if (props.config.route) {
+        event?.stopPropagation();
+        app?.emit('navigateTo', props.config.route);
+        return;
+      }
       for (const fn of actualActions.value) {
         if (typeof fn === 'function') {
           const ret = await fn(vm, { model: props.model });
-          console.log('%c Line:43 🍇 ret', 'color:#42b983', ret);
           if (ret === false) {
             break;
           }
@@ -65,3 +69,10 @@ export default defineComponent({
   },
 });
 </script>
+<style>
+.magic-ui-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

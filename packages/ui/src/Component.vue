@@ -28,7 +28,6 @@ export default defineComponent({
     const app: Core | undefined = inject('app');
 
     provide('hoc', vm);
-
     return {
       tagName: computed(() => `magic-ui-${toLine(props.config.type)}`),
       style: computed(() => app?.transformStyle(props.config.style)),

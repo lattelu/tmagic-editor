@@ -1,42 +1,17 @@
 <template>
-  <view class="demo" @tap="onPageTap">
-    <magic-ui-page :config="pageConfig"></magic-ui-page>
-  </view>
+  <PageVue v-if="app.appRef && app.appConfig" :app="app.appRef" :config="app.appConfig"></PageVue>
 </template>
 <script lang="ts" setup>
-import { useLoad } from '@tarojs/taro';
+import { onMounted, provide } from 'vue';
 
-import { provide, reactive } from 'vue';
-import mockData from '@/mock';
-import Core, { getCommonEventName } from '@tmagic/core';
-import { getUrlParam } from '@tmagic/utils';
-const app = new Core({
-  designWidth: 750,
-  config: mockData,
-  platform: 'mini',
-  curPage: getUrlParam('page'),
-});
+import { useAppStore } from './appStore';
+import PageVue from './Page.vue';
+const app = useAppStore();
 
-const onPageTap = (e) => {
-  console.log('%c Line:18 🥕 e', 'color:#e41a6a', e.target.id);
-  const id = e.target.id;
-  console.log('%c Line:18 🥕 e', 'color:#e41a6a', app);
-
-  const node = app.page?.getNode(id);
-  if (node) {
-    app.emit(getCommonEventName('click'), node);
+provide('app', app.appRef);
+onMounted(() => {
+  if (!app.appConfig) {
+    app.getAppConfig();
   }
-};
-
-provide('app', app);
-
-// const app = inject<Core | undefined>("app");
-const pageConfig = reactive(app?.page?.data || {});
-useLoad((options) => {
-  console.log('%c Line:14 🍧 options', 'color:#2eafb0', options);
 });
 </script>
-<style scoped>
-.demo {
-}
-</style>

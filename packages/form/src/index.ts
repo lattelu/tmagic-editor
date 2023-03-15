@@ -52,6 +52,7 @@ import './theme/index.scss';
 
 export * from './schema';
 export * from './utils/form';
+export { default as defineFormConfig } from './utils/createForm';
 export * from './utils/useAddField';
 
 export { default as MForm } from './Form.vue';

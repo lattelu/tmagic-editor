@@ -29,7 +29,7 @@ import { fillBackgroundImage, isNumber, style2Obj } from './utils';
 interface AppOptionsConfig {
   ua?: string;
   config?: MApp;
-  platform?: 'editor' | 'mobile' | 'tv' | 'pc' | 'mini';
+  platform?: 'editor' | 'mobile' | 'tv' | 'pc' | 'mini' | 'magic';
   jsEngine?: 'browser' | 'hippy';
   designWidth?: number;
   curPage?: Id;
@@ -49,13 +49,14 @@ class App extends EventEmitter {
 
   public page: Page | undefined;
 
-  public platform = 'mobile';
+  public platform = 'mobile' as AppOptionsConfig['platform'];
   public jsEngine = 'browser';
   public designWidth = 375;
 
   public components = new Map();
 
   public eventQueueMap: Record<string, EventCache[]> = {};
+  public pageConfigLoaded: boolean;
 
   constructor(options: AppOptionsConfig) {
     super();
@@ -84,8 +85,13 @@ class App extends EventEmitter {
     if (options.transformStyle) {
       this.transformStyle = options.transformStyle;
     }
+    if (options.config) {
+      this.setConfig(options.config, options.curPage);
+      this.pageConfigLoaded = true;
+    } else {
+      this.pageConfigLoaded = false;
+    }
 
-    options.config && this.setConfig(options.config, options.curPage);
     if (this.platform !== 'mini') {
       bindCommonEventListener(this);
     }
@@ -111,7 +117,6 @@ class App extends EventEmitter {
     }
 
     const whiteList = ['zIndex', 'opacity', 'fontWeight'];
-    console.log(this.platform);
     const pxTransform =
       this.platform !== 'mini' ? (value: number) => `${value / 100}rem` : (value: number) => `${value * 2}rpx`;
     Object.entries(styleObj).forEach(([key, value]) => {

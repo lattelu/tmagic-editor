@@ -38,6 +38,10 @@ export default defineComponent({
       style: computed(() => app?.transformStyle(props.config.style || {})),
 
       refresh() {
+        if (app?.platform === 'mini') {
+          // TODO 小程序刷新页面
+          return;
+        }
         window.location.reload();
       },
     };

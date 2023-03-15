@@ -213,6 +213,7 @@ export interface MButton extends MComponent {
   postAction?: (p1: any, p2: any) => string;
   text?: string | ((p1: any, p2: any) => string);
   disabledText?: string | ((p1: any, p2: any) => string);
+  route?: string | ((p1: any, p2: any) => string);
 }
 export interface MButtonProps {
   config: MButton;

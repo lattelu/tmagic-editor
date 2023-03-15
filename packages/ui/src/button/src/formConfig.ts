@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 
-export default [
+import { FormConfig } from '@tmagic/form';
+
+const CONFIG: FormConfig = [
   {
     text: '文本',
     name: 'text',
@@ -25,4 +27,32 @@ export default [
     text: '禁用文本',
     name: 'disabledText',
   },
+  {
+    type: 'switch',
+    name: 'isLink',
+    text: '跳转页面',
+  },
+  {
+    type: 'select',
+    text: '页面类型',
+    name: 'select',
+    placeholder: '请选择页面类型',
+    display: (_vm, { model }) => model.isLink,
+    options: [
+      { text: '外页面', value: 'out' },
+      { text: '编辑器内页面', value: 'in' },
+    ],
+    onChange: (_vm, value, { model, config, ...rest }) => {
+      model.text = value;
+    },
+  },
+  {
+    text: '跳转地址',
+    name: 'route',
+    placeholder: '请输入页面地址',
+    tooltip: '',
+    display: (_vm, { model }) => model.isLink,
+  },
 ];
+
+export default CONFIG;

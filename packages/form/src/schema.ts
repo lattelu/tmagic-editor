@@ -686,7 +686,7 @@ export interface ComponentConfig extends FormItem {
   type: 'component';
   id: string;
   extend: any;
-  display: any;
+  // display: any;
 }
 
 export type ChildConfig =

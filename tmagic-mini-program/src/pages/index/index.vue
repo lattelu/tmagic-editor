@@ -6,20 +6,22 @@
 </template>
 
 <script lang="ts">
-import "./index.scss";
-import Counter from "../../components/Counter.vue";
-import Taro from "@tarojs/taro";
+import './index.scss';
+
+import Taro from '@tarojs/taro';
+
+import Counter from '../../components/Counter.vue';
 
 export default {
-  name: "Index",
+  name: 'Index',
   components: {
     Counter,
   },
   methods: {
     toDemo() {
-      console.log("object");
+      console.log('object');
       Taro.navigateTo({
-        url: "/pages/demo/index",
+        url: '/pages/demo/index',
       });
     },
   },
