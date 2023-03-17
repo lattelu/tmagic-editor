@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
+import { editorService } from '@tmagic/editor';
 import { FormConfig } from '@tmagic/form';
-
 const CONFIG: FormConfig = [
   {
     text: '文本',
@@ -35,12 +35,13 @@ const CONFIG: FormConfig = [
   {
     type: 'select',
     text: '页面类型',
-    name: 'select',
+    name: 'pageType',
     placeholder: '请选择页面类型',
     display: (_vm, { model }) => model.isLink,
     options: [
-      { text: '外页面', value: 'out' },
-      { text: '编辑器内页面', value: 'in' },
+      { text: '小程序页面', value: 'mini' },
+      { text: '编辑器页面', value: 'editor' },
+      { text: '外链', value: 'webview' },
     ],
     onChange: (_vm, value, { model, config, ...rest }) => {
       model.text = value;
@@ -48,10 +49,58 @@ const CONFIG: FormConfig = [
   },
   {
     text: '跳转地址',
-    name: 'route',
+    name: 'url',
     placeholder: '请输入页面地址',
     tooltip: '',
-    display: (_vm, { model }) => model.isLink,
+    display: (_vm, { model }) => model.pageType === 'mini',
+  },
+  {
+    type: 'select',
+    text: '页面选择',
+    name: 'pageId',
+    placeholder: '请选择页面地址',
+    tooltip: '',
+    display: (_vm, { model }) => model.pageType === 'editor',
+    options: () => {
+      // const dsl = window.magicEditorConfig as DSL;
+      const root = editorService.get('root');
+      const pages = root?.items.map((item) => {
+        return {
+          text: item.name,
+          value: item.id,
+        };
+      });
+      return pages || [];
+    },
+    rules: [
+      {
+        message: '请选择页面地址',
+        required: true,
+      },
+    ],
+  },
+  {
+    text: '外链',
+    name: 'url',
+    placeholder: '请输入正确的网页地址',
+    tooltip: '',
+    display: (_vm, { model }) => model.pageType === 'webview',
+    rules: [
+      {
+        message: '请输入正确的网页地址',
+        required: true,
+        validator(options, data) {
+          const { url } = data.model;
+
+          const reg = /^(((ht|f)tps?):\/\/)?([^!@#$%^&*?.\s-]([^!@#$%^&*?.\s]{0,63}[^!@#$%^&*?.\s])?\.)+[a-z]{2,6}\/?/;
+          if (reg.test(url)) {
+            options.callback();
+          } else {
+            options.callback(new Error('输入的网址错误'));
+          }
+        },
+      },
+    ],
   },
 ];
 

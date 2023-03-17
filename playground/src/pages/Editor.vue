@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, toRaw } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Coin, Connection, Document } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -180,6 +180,14 @@ editorService.usePlugin({
     return [config, parent];
   },
 });
+watch(
+  value,
+  (_value) => {
+    // @ts-ignore
+    window.magicEditorConfig = _value;
+  },
+  { immediate: true },
+);
 </script>
 
 <style lang="scss">
