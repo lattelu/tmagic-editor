@@ -1,8 +1,8 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@tmagic/core': 1.2.8
-  '@tmagic/schema': 1.2.8
+  '@tmagic/core': 1.2.9
+  '@tmagic/schema': 1.2.9
   '@types/react': ^17.0.37
   '@types/react-dom': ^17.0.11
   qrcode: ^1.5.0

@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@testing-library/vue': ^6.4.2
   '@tmagic/core': workspace:*
+  '@tmagic/editor': workspace:*
   '@tmagic/form': workspace:*
   '@tmagic/schema': workspace:*
   '@tmagic/utils': workspace:*
@@ -16,6 +17,7 @@ specifiers:
 
 dependencies:
   '@tmagic/core': link:../core
+  '@tmagic/editor': link:../editor
   '@tmagic/form': link:../form
   '@tmagic/schema': link:../schema
   '@tmagic/utils': link:../utils

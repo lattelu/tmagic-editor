@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@tmagic/schema': 1.2.8
+  '@tmagic/schema': 1.2.9
   '@types/events': ^3.0.0
   '@types/lodash-es': ^4.17.4
   '@types/node': ^15.12.4

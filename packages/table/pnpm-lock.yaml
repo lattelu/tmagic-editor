@@ -1,9 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@tmagic/design': 1.2.8
-  '@tmagic/form': 1.2.8
-  '@tmagic/utils': 1.2.8
+  '@tmagic/design': 1.2.9
+  '@tmagic/form': 1.2.9
+  '@tmagic/utils': 1.2.9
   '@types/color': ^3.0.1
   '@types/lodash-es': ^4.17.4
   '@types/node': ^15.12.4
