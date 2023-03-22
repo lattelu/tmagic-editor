@@ -1,7 +1,9 @@
-import { createApp, defineAsyncComponent } from 'vue'
-import { createPinia } from 'pinia'
-import components from "./async-comp-entry";
 import './app.scss'
+
+import { createPinia } from 'pinia'
+import { createApp, defineAsyncComponent } from 'vue'
+
+import components from "./async-comp-entry";
 
 const App = createApp({
   onShow(options) {

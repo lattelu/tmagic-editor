@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-import { getCurrentInstance, inject, onMounted, onUnmounted } from 'vue';
-
 import Core from '@tmagic/core';
+import { getCurrentInstance, inject, onMounted, onUnmounted } from 'vue';
 
 export default (props) => {
   const app: Core | undefined = inject('app');

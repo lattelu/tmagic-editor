@@ -3,25 +3,16 @@
     v-if="display()"
     :is="tagName"
     :id="config.id"
-    :class="`magic-ui-component${
-      config.className ? ` ${config.className}` : ''
-    }`"
+    :class="`magic-ui-component${config.className ? ` ${config.className}` : ''}`"
     :style="style"
     :config="config"
   ></component>
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  getCurrentInstance,
-  inject,
-  provide,
-} from "vue";
-
-import Core from "@tmagic/core";
-import { toLine } from "@tmagic/utils";
+import Core from '@tmagic/core';
+import { toLine } from '@tmagic/utils';
+import { computed, defineComponent, getCurrentInstance, inject, provide } from 'vue';
 
 export default defineComponent({
   props: {
@@ -33,9 +24,9 @@ export default defineComponent({
 
   setup(props) {
     const vm = getCurrentInstance()?.proxy;
-    const app: Core | undefined = inject("app");
+    const app: Core | undefined = inject('app');
 
-    provide("hoc", vm);
+    provide('hoc', vm);
 
     return {
       tagName: computed(() => `magic-ui-${toLine(props.config.type)}`),
@@ -44,7 +35,7 @@ export default defineComponent({
       display: () => {
         const displayCfg = props.config?.display;
 
-        if (typeof displayCfg === "function") {
+        if (typeof displayCfg === 'function') {
           return displayCfg(app);
         }
         return displayCfg !== false;

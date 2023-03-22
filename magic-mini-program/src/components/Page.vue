@@ -3,9 +3,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { MPage } from "@tmagic/schema";
+import type { MPage } from '@tmagic/schema';
 
-import Container from "./Container.vue";
+import Container from './Container.vue';
 
 defineProps<{
   config: MPage;
