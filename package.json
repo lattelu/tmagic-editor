@@ -12,8 +12,6 @@
     "lint-fix": "eslint . --fix --ext .vue,.js,.ts,.tsx",
     "playground": "pnpm --filter \"runtime-vue3\" --filter \"tmagic-playground\" dev",
     "pg": "pnpm playground",
-    "playground:vue2": "pnpm --filter \"runtime-vue2\" --filter \"tmagic-playground\" dev:vue2",
-    "pg:vue2": "pnpm playground:vue2",
     "playground:react": "pnpm --filter \"runtime-react\" --filter \"tmagic-playground\" dev:react",
     "pg:react": "pnpm playground:react",
     "build": "pnpm --filter \"@tmagic/*\" build",
