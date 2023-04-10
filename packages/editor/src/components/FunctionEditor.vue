@@ -39,7 +39,7 @@ import { TMagicCard, TMagicInput, tMagicMessage } from '@tmagic/design';
 import { ColumnConfig, TableConfig } from '@tmagic/form';
 import { CodeParam, Id } from '@tmagic/schema';
 
-import type { Services } from '../type';
+import type { Services } from '@editor/type';
 
 import CodeDraftEditor from './CodeDraftEditor.vue';
 const defaultParamColConfig: ColumnConfig = {
@@ -136,7 +136,7 @@ watchEffect(() => {
 });
 
 const initTableModel = (): void => {
-  const codeDsl = cloneDeep(services?.codeBlockService.getCodeDslSync());
+  const codeDsl = cloneDeep(services?.codeBlockService.getCodeDsl());
   if (!codeDsl) return;
   tableModel.value = {
     params: codeDsl[props.id]?.params || [],

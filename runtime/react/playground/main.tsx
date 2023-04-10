@@ -35,13 +35,14 @@ declare global {
   }
 }
 
-const designWidth = document.documentElement.getBoundingClientRect().width;
-
 const app = new Core({
-  designWidth,
-  config: {},
+  ua: window.navigator.userAgent,
   platform: 'editor',
 });
+
+if (app.env.isWeb) {
+  app.setDesignWidth(window.document.documentElement.getBoundingClientRect().width);
+}
 
 window.appInstance = app;
 

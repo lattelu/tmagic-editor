@@ -1,3 +1,61 @@
+## [1.2.13](https://github.com/Tencent/tmagic-editor/compare/v1.2.12...v1.2.13) (2023-03-30)
+
+
+### Bug Fixes
+
+* **editor:** 代码块code-block-panel-tool slot data丢失 ([aa12779](https://github.com/Tencent/tmagic-editor/commit/aa12779598ba94a56f26776a6dc1213ed5bb35dc))
+
+
+### Features
+
+* **design,element-plus-adapter,tdesign-vue-next-adapter:** 新增drawer ([1b5d3e5](https://github.com/Tencent/tmagic-editor/commit/1b5d3e564d8afe0bb2709ef9c14e8577592b2c9e))
+
+
+
+## [1.2.12](https://github.com/Tencent/tmagic-editor/compare/v1.2.11...v1.2.12) (2023-03-30)
+
+
+### Bug Fixes
+
+* **core:** style兼容hippy ([fb026a1](https://github.com/Tencent/tmagic-editor/commit/fb026a134ff74193a89519428a0185806c339b04))
+* **core:** 没有设置curPage，默认取第一个page ([44290b6](https://github.com/Tencent/tmagic-editor/commit/44290b65ba77b597304165acce46b94ceb7c40be))
+
+
+
+## [1.2.11](https://github.com/Tencent/tmagic-editor/compare/v1.2.10...v1.2.11) (2023-03-30)
+
+
+### Bug Fixes
+
+* **form:** table 移动列变成了交换 ([37045f7](https://github.com/Tencent/tmagic-editor/commit/37045f7201a48105a32e0371f27c69154393e777))
+* **form:** table可能出现两个extra ([0cac40e](https://github.com/Tencent/tmagic-editor/commit/0cac40eb316f83a5dcee8fbf627f97fb9af8a713))
+
+
+### Features
+
+* **core,runtime:** 删除App中pages，只留下当前page ([cfd2a6e](https://github.com/Tencent/tmagic-editor/commit/cfd2a6eee38bde7f723c27509a1cd9f57c3165ba))
+* **editor,form,core,schema:** 事件支持触发代码块 ([39468f3](https://github.com/Tencent/tmagic-editor/commit/39468f3b95749c424be84e4229c18fcd18ec9b54))
+* **editor:** 新增依赖收集器 ([35f9a59](https://github.com/Tencent/tmagic-editor/commit/35f9a59f442d50b195b14f91da26b6b314928f55))
+* **edtior:** 代码块使用依赖收集器改造 ([3b6ca97](https://github.com/Tencent/tmagic-editor/commit/3b6ca97f4ceeab215cb9d43b237159993bb6370b))
+
+
+
+## [1.2.10](https://github.com/Tencent/tmagic-editor/compare/v1.2.9...v1.2.10) (2023-03-27)
+
+
+### Bug Fixes
+
+* **core:** 非浏览器环境屏蔽相关代码 ([36c4ffa](https://github.com/Tencent/tmagic-editor/commit/36c4ffa02e1b8f7e43a53e29e3e5f57541ca1574))
+* **form:** 修复lastvalues漏传的问题 ([54e2ce2](https://github.com/Tencent/tmagic-editor/commit/54e2ce2c7e49d7eaeecd2044bc4a287d1fa4cc0e))
+* **runtime:** vue playgound 中dsl更新没有同步到Core中 ([b665262](https://github.com/Tencent/tmagic-editor/commit/b6652624e396b73657867759a3d34c852f6de43f))
+
+
+### Features
+
+* **core:** 新增节点操作方法 ([f1f100f](https://github.com/Tencent/tmagic-editor/commit/f1f100f9527ec5e318e0f753d8770a9587eb45c1))
+
+
+
 ## [1.2.9](https://github.com/Tencent/tmagic-editor/compare/v1.2.8...v1.2.9) (2023-03-13)
 
 

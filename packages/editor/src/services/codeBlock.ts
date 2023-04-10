@@ -17,14 +17,13 @@
  */
 
 import { reactive } from 'vue';
-import { cloneDeep, forIn, isEmpty, keys, omit, pick, union } from 'lodash-es';
+import { keys, pick } from 'lodash-es';
 
-import { CodeBlockContent, CodeBlockDSL, HookType, Id, MNode, MPage } from '@tmagic/schema';
+import { CodeBlockContent, CodeBlockDSL, Id } from '@tmagic/schema';
 
-import editorService from '../services/editor';
-import type { CodeRelation, CodeState, HookData } from '../type';
-import { CODE_DRAFT_STORAGE_KEY } from '../type';
-import { info } from '../utils/logger';
+import type { CodeState } from '@editor/type';
+import { CODE_DRAFT_STORAGE_KEY } from '@editor/type';
+import { info } from '@editor/utils/logger';
 
 import BaseService from './BaseService';
 
@@ -36,16 +35,10 @@ class CodeBlock extends BaseService {
     editable: true,
     combineIds: [],
     undeletableList: [],
-    relations: {},
   });
 
   constructor() {
     super([
-      'setCodeDsl',
-      'getCodeDsl',
-      'getCodeContentById',
-      'getCodeDslByIds',
-      'getCurrentDsl',
       'setCodeDslById',
       'setCodeEditorShowStatus',
       'setEditStatus',
@@ -62,7 +55,6 @@ class CodeBlock extends BaseService {
    */
   public async setCodeDsl(codeDsl: CodeBlockDSL): Promise<void> {
     this.state.codeDsl = codeDsl;
-    await editorService.setCodeDsl(this.state.codeDsl);
     info('[code-block]:code-dsl-change', this.state.codeDsl);
     this.emit('code-dsl-change', this.state.codeDsl);
   }
@@ -73,14 +65,7 @@ class CodeBlock extends BaseService {
    * @param {boolean} forceRefresh 是否强制从活动dsl拉取刷新
    * @returns {CodeBlockDSL | null}
    */
-  public async getCodeDsl(forceRefresh = false): Promise<CodeBlockDSL | null> {
-    return this.getCodeDslSync(forceRefresh);
-  }
-
-  public getCodeDslSync(forceRefresh = false): CodeBlockDSL | null {
-    if (!this.state.codeDsl || forceRefresh) {
-      this.state.codeDsl = editorService.getCodeDslSync();
-    }
+  public getCodeDsl(): CodeBlockDSL | null {
     return this.state.codeDsl;
   }
 
@@ -89,9 +74,9 @@ class CodeBlock extends BaseService {
    * @param {Id} id 代码块id
    * @returns {CodeBlockContent | null}
    */
-  public async getCodeContentById(id: Id): Promise<CodeBlockContent | null> {
+  public getCodeContentById(id: Id): CodeBlockContent | null {
     if (!id) return null;
-    const totalCodeDsl = await this.getCodeDsl();
+    const totalCodeDsl = this.getCodeDsl();
     if (!totalCodeDsl) return null;
     return totalCodeDsl[id] ?? null;
   }
@@ -103,31 +88,27 @@ class CodeBlock extends BaseService {
    * @returns {void}
    */
   public async setCodeDslById(id: Id, codeConfig: CodeBlockContent): Promise<void> {
-    let codeDsl = await this.getCodeDsl();
+    const codeDsl = this.getCodeDsl();
+
+    if (!codeDsl) {
+      throw new Error('dsl中没有codeBlocks');
+    }
+
     const codeConfigProcessed = codeConfig;
     if (codeConfig.content) {
       // 在保存的时候转换代码内容
       // eslint-disable-next-line no-eval
       codeConfigProcessed.content = eval(codeConfig.content);
     }
-    if (!codeDsl) {
-      // dsl中无代码块字段
-      codeDsl = {
-        [id]: {
-          ...codeConfigProcessed,
-        },
-      };
-    } else {
-      const existContent = codeDsl[id] || {};
-      codeDsl = {
-        ...codeDsl,
-        [id]: {
-          ...existContent,
-          ...codeConfigProcessed,
-        },
-      };
-    }
-    await this.setCodeDsl(codeDsl);
+
+    const existContent = codeDsl[id] || {};
+
+    codeDsl[id] = {
+      ...existContent,
+      ...codeConfigProcessed,
+    };
+
+    this.emit('addOrUpdate', id, codeDsl[id]);
   }
 
   /**
@@ -135,8 +116,8 @@ class CodeBlock extends BaseService {
    * @param {string[]} ids 代码块id数组
    * @returns {CodeBlockDSL}
    */
-  public async getCodeDslByIds(ids: string[]): Promise<CodeBlockDSL> {
-    const codeDsl = await this.getCodeDsl();
+  public getCodeDslByIds(ids: string[]): CodeBlockDSL {
+    const codeDsl = this.getCodeDsl();
     return pick(codeDsl, ids) as CodeBlockDSL;
   }
 
@@ -173,8 +154,8 @@ class CodeBlock extends BaseService {
    * 获取当前选中的代码块内容
    * @returns {CodeBlockContent | null}
    */
-  public async getCurrentDsl(): Promise<CodeBlockContent | null> {
-    return await this.getCodeContentById(this.state.id);
+  public getCurrentDsl(): CodeBlockContent | null {
+    return this.getCodeContentById(this.state.id);
   }
 
   /**
@@ -187,7 +168,7 @@ class CodeBlock extends BaseService {
 
   /**
    * 设置编辑状态
-   * @param {boolean} 是否可编辑
+   * @param {boolean} status 是否可编辑
    * @returns {void}
    */
   public async setEditStatus(status: boolean): Promise<void> {
@@ -227,56 +208,6 @@ class CodeBlock extends BaseService {
    */
   public getCombineIds(): string[] {
     return this.state.combineIds;
-  }
-
-  /**
-   * 监听组件更新来更新代码块绑定关系
-   * @returns {void}
-   */
-  public addCodeRelationListener(): void {
-    // 监听组件更新
-    editorService.on('update', (nodes: MNode[]) => {
-      const relations: CodeRelation = cloneDeep(this.state.relations);
-      nodes.forEach((node: MNode) => {
-        if (node?.id) {
-          relations[node.id] = [];
-          this.getNodeRelation(node, relations);
-        }
-      });
-      this.state.relations = { ...relations };
-    });
-    // 监听组件删除
-    editorService.on('remove', (nodes: MNode[]) => {
-      nodes.forEach((node: MNode) => {
-        this.state.relations = this.deleteNodeRelation(node, this.state.relations);
-      });
-    });
-    // 监听历史记录，历史快照为页面整体，需要深层遍历更新
-    editorService.on('history-change', (page: MPage) => {
-      const relations: CodeRelation = {};
-      this.getNodeRelation(page, relations, true);
-      this.state.relations = relations;
-    });
-  }
-
-  /**
-   * 更新全部绑定关系
-   * @returns {void}
-   */
-  public refreshAllRelations(): void {
-    const root = editorService.get('root');
-    if (!root) return;
-    const relations: CodeRelation = {};
-    this.getNodeRelation(root, relations, true);
-    this.state.relations = relations;
-  }
-
-  /**
-   * 获取绑定关系
-   * @returns {CodeRelation}
-   */
-  public getCombineInfo(): CodeRelation {
-    return this.state.relations;
   }
 
   /**
@@ -320,13 +251,17 @@ class CodeBlock extends BaseService {
   /**
    * 在dsl数据源中删除指定id的代码块
    * @param {Id[]} codeIds 需要删除的代码块id数组
-   * @returns {CodeBlockDSL} 删除后的code dsl
    */
-  public async deleteCodeDslByIds(codeIds: Id[]): Promise<CodeBlockDSL> {
+  public async deleteCodeDslByIds(codeIds: Id[]): Promise<void> {
     const currentDsl = await this.getCodeDsl();
-    const newDsl = omit(currentDsl, codeIds);
-    await this.setCodeDsl(newDsl);
-    return newDsl;
+
+    if (!currentDsl) return;
+
+    codeIds.forEach((id) => {
+      delete currentDsl[id];
+
+      this.emit('remove', id);
+    });
   }
 
   /**
@@ -355,65 +290,6 @@ class CodeBlock extends BaseService {
     this.resetState();
     this.removeAllListeners();
     this.removeAllPlugins();
-  }
-
-  /**
-   * 递归遍历dsl中挂载了代码块的节点，并更新绑定关系数据
-   * @param {MNode} node 节点信息
-   * @param {CodeRelation} relation 关系数据
-   * @param {boolean} deep 是否深层遍历
-   * @returns void
-   */
-  private getNodeRelation(node: MNode, relation: CodeRelation, deep = false): void {
-    forIn(node, (value, key) => {
-      if (value?.hookType === HookType.CODE && !isEmpty(value.hookData)) {
-        value.hookData.forEach((relationItem: HookData) => {
-          if (relationItem.codeId) {
-            relation[node.id] = union(relation[node.id], [relationItem.codeId]);
-          }
-        });
-        // continue
-        return;
-      }
-      let isContinue = false;
-      try {
-        // 只遍历更新当前组件的关系，不再深层遍历容器包含的组件
-        isContinue = key !== 'items' && typeof value === 'object' && JSON.stringify(value).includes('hookType');
-      } catch (error) {
-        console.error(error);
-      }
-      if (isContinue) {
-        // 检查value内部是否有嵌套
-        const unConfirmedValue = {
-          id: node.id,
-          ...value,
-        };
-        this.getNodeRelation(unConfirmedValue, relation);
-      }
-      // 深层遍历用于代码列表初始化
-      if (key === 'items' && !isEmpty(value) && deep) {
-        value.forEach((item: MNode) => {
-          this.getNodeRelation(item, relation, deep);
-        });
-      }
-    });
-  }
-
-  /**
-   * 删除组件关系
-   * @param {MNode} node 节点信息
-   * @param {CodeRelation} relations 关系数据
-   * @returns CodeRelation
-   */
-  private deleteNodeRelation(node: MNode, relations: CodeRelation): CodeRelation {
-    if (!node.id) return {};
-    let newRelations = omit(relations, [node.id]);
-    if (!isEmpty(node.items)) {
-      node.items.forEach((item: MNode) => {
-        newRelations = this.deleteNodeRelation(item, newRelations);
-      });
-    }
-    return newRelations;
   }
 }
 

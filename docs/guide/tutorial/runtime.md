@@ -97,6 +97,8 @@ npm run serve -- --port=8078
 
 const value = ref({
   type: 'app',
+  // 必须加上ID，这个id可能是数据库生成的key，也可以是生成的uuid
+  id: 1,
   items: [],
 });
 
@@ -230,4 +232,4 @@ watch(page, async () => {
 
 当前教程中实现了一个简单的page，tmagic提供了一个比较完善的实现，将在下一节介绍
 
-[源码](https://github.com/jia000/tmagic-tutorial/tree/master/course2)
+[源码](https://github.com/vft-magic/tmagic-tutorial/tree/master/course2)

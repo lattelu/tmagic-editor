@@ -1,5 +1,5 @@
 <template>
-  <div class="m-fields-code-select">
+  <div class="m-fields-code-select" :class="config.className">
     <m-form-table
       :config="tableConfig"
       :model="model[name]"
@@ -11,7 +11,7 @@
     >
       <template #operateCol="{ scope }">
         <Icon
-          v-if="scope.row.codeId"
+          v-if="scope.row.codeId && config.editable"
           :icon="editable ? Edit : View"
           class="edit-icon"
           @click="editCode(scope.row.codeId)"
@@ -29,22 +29,33 @@ import { isEmpty, map } from 'lodash-es';
 import { createValues, FormItem, FormState, TableConfig } from '@tmagic/form';
 import { HookType, Id } from '@tmagic/schema';
 
-import Icon from '../components/Icon.vue';
-import { CodeParamStatement, HookData, Services } from '../type';
+import Icon from '@editor/components/Icon.vue';
+import type { CodeParamStatement, HookData, Services } from '@editor/type';
+
 const services = inject<Services>('services');
 const mForm = inject<FormState>('mForm');
 const emit = defineEmits(['change']);
 
-const props = defineProps<{
-  config: {
-    tableConfig?: TableConfig;
-  };
-  model: any;
-  prop: string;
-  name: string;
-  size: 'mini' | 'small' | 'medium';
-}>();
-const codeDsl = computed(() => services?.codeBlockService.getCodeDslSync());
+const props = withDefaults(
+  defineProps<{
+    config: {
+      tableConfig?: TableConfig;
+      className?: string;
+      editable?: boolean;
+    };
+    model: any;
+    prop: string;
+    name: string;
+    size: 'small' | 'default' | 'large';
+  }>(),
+  {
+    config: () => ({
+      editable: true,
+    }),
+  },
+);
+
+const codeDsl = computed(() => services?.codeBlockService.getCodeDsl());
 
 const tableConfig = computed<FormItem>(() => {
   const defaultConfig = {
@@ -80,7 +91,7 @@ const tableConfig = computed<FormItem>(() => {
         itemsFunction: (row: HookData) => {
           const paramsConfig = getParamsConfig(row.codeId);
           // 如果参数没有填值，则使用createValues补全空值
-          if (isEmpty(row.params) || !row.params) {
+          if (!row.params || isEmpty(row.params)) {
             createValues(mForm, paramsConfig, {}, row.params);
           }
           return paramsConfig;
@@ -124,6 +135,7 @@ const getParamsConfig = (codeId: Id): CodeParamStatement[] => {
   return paramStatements.map((paramState: CodeParamStatement) => ({
     labelWidth: '100px',
     text: paramState.name,
+    inline: true,
     ...paramState,
   }));
 };
