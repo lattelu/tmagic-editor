@@ -138,7 +138,7 @@ export default (configEnv: ConfigEnv): UserConfigExport => {
       }
     },
     build: {
-      outDir: `dist-${new Date().getTime()}`,
+      outDir: `dist-${process.env.npm_package_version}`,
       /** 消除打包大小超过 500kb 警告 */
       chunkSizeWarningLimit: 2000,
       /** Vite 2.6.x 以上需要配置 minify: "terser", terserOptions 才能生效 */

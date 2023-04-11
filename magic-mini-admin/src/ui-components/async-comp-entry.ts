@@ -1,35 +1,19 @@
 const components: Record<string, any> = {
-  'page': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/page/src/index.vue',
-  ),
+  page: () => import('@tmagic/ui/src/page'),
 
-  'container': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/container/src/Container.vue',
-  ),
+  container: () => import('@tmagic/ui/src/container'),
 
-  'button': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/button/src/index.vue',
-  ),
+  button: () => import('@tmagic/ui/src/button'),
 
-  'text': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/text/src/index.vue',
-  ),
+  text: () => import('@tmagic/ui/src/text'),
 
-  'img': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/img/src/index.vue',
-  ),
+  img: () => import('@tmagic/ui/src/img'),
 
-  'qrcode': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/qrcode/src/index.vue',
-  ),
+  qrcode: () => import('@tmagic/ui/src/qrcode'),
 
-  'overlay': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/overlay/src/index.vue',
-  ),
+  overlay: () => import('@tmagic/ui/src/overlay'),
 
-  'news': () => import(
-    '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/news/src/index.vue',
-  ),
-};
+  news: () => import('@tmagic/ui/src/news')
+}
 
-export default components;
+export default components

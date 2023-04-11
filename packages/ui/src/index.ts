@@ -25,6 +25,10 @@ import Page from './page';
 import Qrcode from './qrcode';
 import Text from './text';
 
+export { default as uiConfig } from './config';
+export { default as uiValue } from './value';
+export { default as uiEvent } from './events';
+
 const ui: Record<string, any> = {
   page: Page,
   container: Container,

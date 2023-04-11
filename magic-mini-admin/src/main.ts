@@ -53,6 +53,6 @@ app.use(ElementPlus, {
 })
 app.use(TMagicDesign, MagicElementPlusAdapter)
 app.use(MagicEditor)
-app.use(MagicForm)
+app.use(MagicForm,{})
 app.use(MagicTable)
 app.mount('#app')

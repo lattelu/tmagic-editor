@@ -1,9 +1,3 @@
-import page from '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/page/src/event';
-import overlay from '/Users/agan/Doc/Front-End/tmagic-editor/packages/ui/src/overlay/src/event';
+import { uiEvent } from '@tmagic/ui'
 
-const events: Record<string, any> = {
-  'page': page,
-  'overlay': overlay,
-};
-
-export default events;
+export default uiEvent
