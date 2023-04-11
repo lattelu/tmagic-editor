@@ -18,7 +18,18 @@
 
 import { EventEmitter } from 'events';
 
-import type { CodeBlockDSL, EventItemConfig, Id, MApp, MPage } from '@tmagic/schema';
+import { has, isEmpty } from 'lodash-es';
+
+import {
+  ActionType,
+  CodeBlockDSL,
+  CodeItemConfig,
+  CompItemConfig,
+  DeprecatedEventConfig,
+  EventConfig,
+  Id,
+  MApp,
+} from '@tmagic/schema';
 
 import Env from './Env';
 import { bindCommonEventListener, isCommonMethod, triggerCommonMethod } from './events';
@@ -37,17 +48,17 @@ interface AppOptionsConfig {
 }
 
 interface EventCache {
-  eventConfig: EventItemConfig;
+  eventConfig: CompItemConfig | DeprecatedEventConfig;
   fromCpt: any;
   args: any[];
 }
 
 class App extends EventEmitter {
-  public env;
-  public codeDsl: CodeBlockDSL | undefined;
-  public pages = new Map<Id, Page>();
+  public env: Env = new Env();
+  public dsl?: MApp;
+  public codeDsl?: CodeBlockDSL;
 
-  public page: Page | undefined;
+  public page?: Page;
 
   public platform = 'mobile' as AppOptionsConfig['platform'];
   public jsEngine = 'browser';
@@ -58,28 +69,19 @@ class App extends EventEmitter {
   public eventQueueMap: Record<string, EventCache[]> = {};
   public pageConfigLoaded: boolean;
 
+  private eventList: { [name: string]: (fromCpt: Node, ...args: any[]) => void } = {};
+
   constructor(options: AppOptionsConfig) {
     super();
-    this.env = new Env(options.ua);
+
+    this.setEnv(options.ua);
     // 代码块描述内容在dsl codeBlocks字段
     this.codeDsl = options.config?.codeBlocks;
     options.platform && (this.platform = options.platform);
     options.jsEngine && (this.jsEngine = options.jsEngine);
-    options.designWidth && (this.designWidth = options.designWidth);
 
-    // 根据屏幕大小计算出跟节点的font-size，用于rem样式的适配
-    if (this.platform === 'mobile' || this.platform === 'editor') {
-      const calcFontsize = () => {
-        const { width } = document.documentElement.getBoundingClientRect();
-        const fontSize = width / (this.designWidth / 100);
-        document.documentElement.style.fontSize = `${fontSize}px`;
-      };
-
-      calcFontsize();
-
-      document.body.style.fontSize = '14px';
-
-      globalThis.addEventListener('resize', calcFontsize);
+    if (typeof options.designWidth !== 'undefined') {
+      this.setDesignWidth(options.designWidth);
     }
 
     if (options.transformStyle) {
@@ -92,13 +94,35 @@ class App extends EventEmitter {
       this.pageConfigLoaded = false;
     }
 
+    if (options.config) {
+      let pageId = options.curPage;
+      if (!pageId && options.config.items.length) {
+        pageId = options.config.items[0].id;
+      }
+      this.setConfig(options.config, pageId);
+    }
+
     if (this.platform !== 'mini') {
       bindCommonEventListener(this);
     }
   }
 
+  public setEnv(ua?: string) {
+    this.env = new Env(ua);
+  }
+
+  public setDesignWidth(width: number) {
+    this.designWidth = width;
+    // 根据屏幕大小计算出跟节点的font-size，用于rem样式的适配
+    if (this.jsEngine === 'browser') {
+      this.calcFontsize();
+      globalThis.removeEventListener('resize', this.calcFontsize);
+      globalThis.addEventListener('resize', this.calcFontsize);
+    }
+  }
+
   /**
-   * 将dsl中的style配置转换成css，主要是将数子转成rem为单位的样式值，例如100将被转换成1rem
+   * 将dsl中的style配置转换成css，主要是将数值转成rem为单位的样式值，例如100将被转换成1rem
    * @param style Object
    * @returns Object
    */
@@ -116,23 +140,20 @@ class App extends EventEmitter {
       styleObj = { ...style };
     }
 
+    const isHippy = this.jsEngine === 'hippy';
+
     const whiteList = ['zIndex', 'opacity', 'fontWeight'];
     const pxTransform =
-      this.platform !== 'mini' ? (value: number) => `${value / 100}rem` : (value: number) => `${value * 2}rpx`;
+      this.platform !== 'mini' || isHippy
+        ? (value: number) => `${value / 100}rem`
+        : (value: number) => `${value * 2}rpx`;
     Object.entries(styleObj).forEach(([key, value]) => {
-      if (key === 'backgroundImage') {
+      if (key === 'scale' && !results.transform && isHippy) {
+        results.transform = [{ scale: value }];
+      } else if (key === 'backgroundImage' && !isHippy) {
         value && (results[key] = fillBackgroundImage(value));
       } else if (key === 'transform' && typeof value !== 'string') {
-        const values = Object.entries(value as Record<string, string>)
-          .map(([transformKey, transformValue]) => {
-            if (!transformValue.trim()) return '';
-            if (transformKey === 'rotate' && isNumber(transformValue)) {
-              transformValue = `${transformValue}deg`;
-            }
-            return `${transformKey}(${transformValue})`;
-          })
-          .join(' ');
-        results[key] = !values.trim() ? 'none' : values;
+        results[key] = this.getTransform(value);
       } else if (!whiteList.includes(key) && value && /^[-]?[0-9]*[.]?[0-9]*$/.test(value)) {
         results[key] = pxTransform(value);
       } else {
@@ -149,52 +170,64 @@ class App extends EventEmitter {
    * @param curPage 当前页面id
    */
   public setConfig(config: MApp, curPage?: Id) {
+    this.dsl = config;
     this.codeDsl = config.codeBlocks;
-    this.pages = new Map();
-    config.items?.forEach((page) => {
-      this.addPage(page);
-    });
-
     this.setPage(curPage || this.page?.data?.id);
   }
 
-  public addPage(config: MPage) {
-    this.pages.set(
-      config.id,
-      new Page({
-        config,
-        app: this,
-      }),
-    );
+  /**
+   * 留着为了兼容，不让报错
+   * @deprecated
+   */
+  public addPage() {
+    console.info('addPage 已经弃用');
   }
 
   public setPage(id?: Id) {
-    let page;
+    const pageConfig = this.dsl?.items.find((page) => page.id === id);
 
-    if (id) {
-      page = this.pages.get(id);
+    if (!pageConfig) {
+      if (this.page) {
+        this.page.destroy();
+        this.page = undefined;
+      }
+
+      super.emit('page-change');
+      return;
     }
 
-    if (!page) {
-      page = this.pages.get(this.pages.keys().next().value);
+    if (pageConfig === this.page?.data) return;
+
+    if (this.page) {
+      this.page.destroy();
     }
 
-    this.page = page;
+    this.page = new Page({
+      config: pageConfig,
+      app: this,
+    });
+
+    super.emit('page-change', this.page);
 
     if (this.platform !== 'magic') {
       this.bindEvents();
     }
   }
 
-  public deletePage(id: Id) {
-    this.pages.delete(id);
-    if (!this.pages.size) {
-      this.page = undefined;
-    }
+  public deletePage() {
+    this.page = undefined;
   }
 
-  public getPage(id: Id) {
-    return this.pages.get(id);
+  /**
+   * 兼容id参数
+   * @param id 节点id
+   * @returns Page | void
+   */
+  public getPage(id?: Id) {
+    if (!id) return this.page;
+    if (this.page?.data.id === id) {
+      return this.page;
+    }
   }
 
   public registerComponent(type: string, Component: any) {
@@ -210,20 +243,25 @@ class App extends EventEmitter {
   }
 
   public bindEvents() {
+    Object.entries(this.eventList).forEach(([name, handler]) => {
+      this.off(name, handler);
+    });
+
+    this.eventList = {};
+
     if (!this.page) return;
 
-    this.removeAllListeners();
-
     for (const [, value] of this.page.nodes) {
-      value.events?.forEach((event) => this.bindEvent(event, `${value.data.id}`));
-    }
-  }
+      value.events?.forEach((event) => {
+        const eventName = `${event.name}_${value.data.id}`;
+        const eventHanlder = (fromCpt: Node, ...args: any[]) => {
+          this.eventHandler(event, fromCpt, args);
+        };
+        this.eventList[eventName] = eventHanlder;
 
-  public bindEvent(event: EventItemConfig, id: string) {
-    const { name } = event;
-    this.on(`${name}_${id}`, (fromCpt: Node, ...args) => {
-      this.eventHandler(event, fromCpt, args);
-    });
+        this.on(eventName, eventHanlder);
+      });
+    }
   }
 
   public emit(name: string | symbol, node: any, ...args: any[]): boolean {
@@ -233,11 +271,53 @@ class App extends EventEmitter {
     return super.emit(name, node, ...args);
   }
 
-  public eventHandler(eventConfig: EventItemConfig, fromCpt: any, args: any[]) {
+  /**
+   * 事件联动处理函数
+   * @param eventConfig 事件配置
+   * @param fromCpt 触发事件的组件
+   * @param args 事件参数
+   */
+  public async eventHandler(eventConfig: EventConfig | DeprecatedEventConfig, fromCpt: any, args: any[]) {
+    if (has(eventConfig, 'actions')) {
+      // EventConfig类型
+      const { actions } = eventConfig as EventConfig;
+      for (const actionItem of actions) {
+        if (actionItem.actionType === ActionType.COMP) {
+          // 组件动作
+          await this.compActionHandler(actionItem as CompItemConfig, fromCpt, args);
+        } else if (actionItem.actionType === ActionType.CODE) {
+          // 执行代码块
+          await this.codeActionHandler(actionItem as CodeItemConfig);
+        }
+      }
+    } else {
+      // 兼容DeprecatedEventConfig类型 组件动作
+      await this.compActionHandler(eventConfig as DeprecatedEventConfig, fromCpt, args);
+    }
+  }
+
+  /**
+   * 执行代码块动作
+   * @param eventConfig 代码动作的配置
+   * @returns void
+   */
+  public async codeActionHandler(eventConfig: CodeItemConfig) {
+    const { codeId = '', params = {} } = eventConfig;
+    if (!codeId || isEmpty(this.codeDsl)) return;
+    if (this.codeDsl![codeId] && typeof this.codeDsl![codeId]?.content === 'function') {
+      await this.codeDsl![codeId].content({ app: this, params });
+    }
+  }
+
+  /**
+   * 执行联动组件动作
+   * @param eventConfig 联动组件的配置
+   * @returns void
+   */
+  public async compActionHandler(eventConfig: CompItemConfig | DeprecatedEventConfig, fromCpt: any, args: any[]) {
     if (!this.page) throw new Error('当前没有页面');
 
     const { method: methodName, to } = eventConfig;
-
     const toNode = this.page.getNode(to);
     if (!toNode) throw `ID为${to}的组件不存在`;
 
@@ -247,7 +327,7 @@ class App extends EventEmitter {
 
     if (toNode.instance) {
       if (typeof toNode.instance[methodName] === 'function') {
-        toNode.instance[methodName](fromCpt, ...args);
+        await toNode.instance[methodName](fromCpt, ...args);
       }
     } else {
       this.addEventToMap({
@@ -260,7 +340,11 @@ class App extends EventEmitter {
 
   public destroy() {
     this.removeAllListeners();
-    this.pages.clear();
+    this.page = undefined;
+
+    if (this.jsEngine === 'browser') {
+      globalThis.removeEventListener('resize', this.calcFontsize);
+    }
   }
 
   private addEventToMap(event: EventCache) {
@@ -269,6 +353,31 @@ class App extends EventEmitter {
     } else {
       this.eventQueueMap[event.eventConfig.to] = [event];
     }
+  }
+
+  private getTransform(value: Record<string, string>) {
+    if (!value) return [];
+
+    const transform = Object.entries(value).map(([transformKey, transformValue]) => {
+      if (!transformValue.trim()) return '';
+      if (transformKey === 'rotate' && isNumber(transformValue)) {
+        transformValue = `${transformValue}deg`;
+      }
+
+      return this.jsEngine !== 'hippy' ? `${transformKey}(${transformValue})` : { [transformKey]: transformValue };
+    });
+
+    if (this.jsEngine === 'hippy') {
+      return transform;
+    }
+    const values = transform.join(' ');
+    return !values.trim() ? 'none' : values;
+  }
+
+  private calcFontsize() {
+    const { width } = document.documentElement.getBoundingClientRect();
+    const fontSize = width / (this.designWidth / 100);
+    document.documentElement.style.fontSize = `${fontSize}px`;
   }
 }
 

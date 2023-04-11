@@ -18,7 +18,7 @@
 
 import type { Component } from 'vue';
 
-import type { FormConfig } from '@tmagic/form';
+import type { FormConfig, FormItem } from '@tmagic/form';
 import type { CodeBlockContent, CodeBlockDSL, Id, MApp, MContainer, MNode, MPage } from '@tmagic/schema';
 import type StageCore from '@tmagic/stage';
 import type {
@@ -30,6 +30,7 @@ import type {
 
 import type { CodeBlockService } from './services/codeBlock';
 import type { ComponentListService } from './services/componentList';
+import type { DepService } from './services/dep';
 import type { EditorService } from './services/editor';
 import type { EventsService } from './services/events';
 import type { HistoryService } from './services/history';
@@ -54,6 +55,7 @@ export interface Services {
   componentListService: ComponentListService;
   uiService: UiService;
   codeBlockService: CodeBlockService;
+  depService: DepService;
 }
 
 export interface StageOptions {
@@ -339,8 +341,6 @@ export type CodeState = {
   combineIds: string[];
   /** 为业务逻辑预留的不可删除的代码块列表，由业务逻辑维护（如代码块上线后不可删除） */
   undeletableList: Id[];
-  /** 代码块和组件的绑定关系 */
-  relations: CodeRelation;
 };
 
 export type HookData = {
@@ -409,4 +409,19 @@ export interface HistoryState {
   pageSteps: Record<Id, UndoRedo<StepValue>>;
   canRedo: boolean;
   canUndo: boolean;
+}
+
+export interface EventSelectConfig {
+  name: string;
+  type: 'event-select';
+  /** 事件名称表单配置 */
+  eventNameConfig?: FormItem;
+  /** 动作类型配置 */
+  actionTypeConfig?: FormItem;
+  /** 联动组件配置 */
+  targetCompConfig?: FormItem;
+  /** 联动组件动作配置 */
+  compActionConfig?: FormItem;
+  /** 联动代码配置 */
+  codeActionConfig?: FormItem;
 }

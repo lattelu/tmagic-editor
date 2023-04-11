@@ -1,12 +1,13 @@
 <template>
-  <TMagicDialog
-    :model-value="true"
+  <TMagicDrawer
     class="code-editor-dialog"
+    :model-value="true"
     :title="currentTitle"
-    :fullscreen="true"
     :close-on-press-escape="false"
     :append-to-body="true"
     :show-close="false"
+    :close-on-click-modal="false"
+    :size="size"
   >
     <Layout v-model:left="left" :min-left="45" class="code-editor-layout">
       <!-- 右侧区域 -->
@@ -26,21 +27,21 @@
         </div>
       </template>
     </Layout>
-  </TMagicDialog>
+  </TMagicDrawer>
 </template>
 
 <script lang="ts" setup name="MEditorCodeBlockEditor">
 import { computed, inject, reactive, ref, watchEffect } from 'vue';
 import { cloneDeep, forIn, isEmpty } from 'lodash-es';
 
-import { TMagicDialog } from '@tmagic/design';
+import { TMagicDrawer } from '@tmagic/design';
 import { ColumnConfig } from '@tmagic/form';
 import { CodeBlockContent } from '@tmagic/schema';
 
-import FunctionEditor from '../../../components/FunctionEditor.vue';
-import Layout from '../../../components/Layout.vue';
-import type { ListState, Services } from '../../../type';
-import { serializeConfig } from '../../../utils/editor';
+import FunctionEditor from '@editor/components/FunctionEditor.vue';
+import Layout from '@editor/components/Layout.vue';
+import type { ListState, Services } from '@editor/type';
+import { serializeConfig } from '@editor/utils/editor';
 
 const services = inject<Services>('services');
 const codeOptions = inject('codeOptions', {});
@@ -48,6 +49,8 @@ const codeOptions = inject('codeOptions', {});
 defineProps<{
   paramsColConfig?: ColumnConfig;
 }>();
+
+const size = computed(() => globalThis.document.body.clientWidth - (services?.uiService.get('columnWidth').left || 0));
 
 const left = ref(200);
 const currentTitle = ref('');

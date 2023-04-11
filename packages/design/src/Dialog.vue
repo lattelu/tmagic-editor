@@ -27,6 +27,7 @@ const props = defineProps<{
   width?: string | number;
   fullscreen?: boolean;
   closeOnClickModal?: boolean;
+  closeOnPressEscape?: boolean;
 }>();
 
 const uiComponent = getConfig('components').dialog;

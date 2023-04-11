@@ -20,7 +20,7 @@ import { EventEmitter } from 'events';
 
 import { isEmpty } from 'lodash-es';
 
-import { EventItemConfig, HookType, MComponent, MContainer, MPage } from '@tmagic/schema';
+import { DeprecatedEventConfig, EventConfig, HookType, MComponent, MContainer, MPage } from '@tmagic/schema';
 
 import type App from './App';
 import type Page from './Page';
@@ -37,7 +37,7 @@ class Node extends EventEmitter {
   public style?: {
     [key: string]: any;
   };
-  public events?: EventItemConfig[];
+  public events: DeprecatedEventConfig[] | EventConfig[];
   public instance?: any;
   public page?: Page;
   public parent?: Node;
@@ -52,7 +52,7 @@ class Node extends EventEmitter {
     this.app = options.app;
     const { events } = options.config;
     this.data = options.config;
-    this.events = events;
+    this.events = events || [];
     this.listenLifeSafe();
 
     this.once('destroy', () => {
@@ -70,6 +70,10 @@ class Node extends EventEmitter {
     this.emit('updata-data');
   }
 
+  public destroy() {
+    this.removeAllListeners();
+  }
+
   private listenLifeSafe() {
     this.once('created', async (instance: any) => {
       this.instance = instance;
@@ -82,7 +86,7 @@ class Node extends EventEmitter {
       const eventConfigQueue = this.app.eventQueueMap[instance.config.id] || [];
 
       for (let eventConfig = eventConfigQueue.shift(); eventConfig; eventConfig = eventConfigQueue.shift()) {
-        this.app.eventHandler(eventConfig.eventConfig, eventConfig.fromCpt, eventConfig.args);
+        this.app.compActionHandler(eventConfig.eventConfig, eventConfig.fromCpt, eventConfig.args);
       }
 
       await this.runCodeBlock('mounted');
@@ -95,11 +99,11 @@ class Node extends EventEmitter {
       await this.data[hook](this);
       return;
     }
-    if (this.data[hook]?.hookType !== HookType.CODE || !this.app.codeDsl || isEmpty(this.app?.codeDsl)) return;
+    if (this.data[hook]?.hookType !== HookType.CODE || isEmpty(this.app.codeDsl)) return;
     for (const item of this.data[hook].hookData) {
       const { codeId, params = {} } = item;
-      if (this.app.codeDsl[codeId] && typeof this.app?.codeDsl[codeId]?.content === 'function') {
-        await this.app.codeDsl[codeId].content({ app: this.app, params });
+      if (this.app.codeDsl![codeId] && typeof this.app.codeDsl![codeId]?.content === 'function') {
+        await this.app.codeDsl![codeId].content({ app: this.app, params });
       }
     }
   }
