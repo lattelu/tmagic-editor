@@ -1,8 +1,16 @@
 import '@unocss/reset/tailwind.css'
 import 'uno.css'
 import './style/index.less'
+import 'element-plus/dist/index.css'
+import '@tmagic/editor/src/theme/index.scss'
 
+import TMagicDesign from '@tmagic/design'
 import MagicEditor from '@tmagic/editor'
+import MagicElementPlusAdapter from '@tmagic/element-plus-adapter'
+import MagicForm from '@tmagic/form'
+import MagicTable from '@tmagic/table'
+import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import CssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
@@ -40,7 +48,11 @@ const app = createApp(App)
 setupStore(app)
 setupRouter(app)
 setupModules(app)
-
+app.use(ElementPlus, {
+  locale: zhCn
+})
+app.use(TMagicDesign, MagicElementPlusAdapter)
 app.use(MagicEditor)
-
+app.use(MagicForm)
+app.use(MagicTable)
 app.mount('#app')

@@ -1,5 +1,6 @@
-import axios, { AxiosResponse } from 'axios'
-import { App } from 'vue'
+import type { AxiosResponse } from 'axios'
+import axios from 'axios'
+import type { App } from 'vue'
 
 const service = axios.create({
   withCredentials: true,

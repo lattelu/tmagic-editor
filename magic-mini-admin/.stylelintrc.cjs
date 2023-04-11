@@ -3,7 +3,7 @@ module.exports = {
   plugins: ['stylelint-declaration-strict-value'],
   extends: [
     'stylelint-config-standard',
-    'stylelint-config-html/vue',
+    'stylelint-config-recommended-vue',
     'stylelint-config-recess-order'
   ],
   customSyntax: 'postcss-html',

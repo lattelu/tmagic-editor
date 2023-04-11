@@ -1,52 +1,19 @@
-/*
- * Tencent is pleased to support the open source community by making TMagicEditor available.
- *
- * Copyright (C) 2023 THL A29 Limited, a Tencent company.  All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import { createApp } from 'vue'
 
-import Core from '@tmagic/core'
-import { getUrlParam } from '@tmagic/utils'
-import { createApp, defineAsyncComponent } from 'vue'
+import App from './App.vue'
 
-// import components from '../.tmagic/async-comp-entry'
-// import plugins from '../.tmagic/plugin-entry'
-import AppComponent from './App.vue'
-import { getLocalConfig } from './utils'
-import request from './utils/request'
+Promise.all([import('~/ui-components/comp-entry'), import('~/ui-components/plugin-entry')]).then(
+  ([components, plugins]) => {
+    const magicApp = createApp(App)
 
-const magicApp = createApp(AppComponent)
+    Object.entries(components.default).forEach(([type, component]: [string, any]) => {
+      magicApp.component(`magic-ui-${type}`, component)
+    })
 
-magicApp.use(request)
+    Object.values(plugins.default).forEach((plugin: any) => {
+      magicApp.use(plugin)
+    })
 
-// Object.entries(components).forEach(([type, component]: [string, any]) => {
-//   magicApp.component(`magic-ui-${type}`, defineAsyncComponent(component))
-// })
-
-// Object.values(plugins).forEach((plugin: any) => {
-//   magicApp.use(plugin)
-// })
-
-const designWidth = document.documentElement.getBoundingClientRect().width
-
-const app = new Core({
-  designWidth,
-  config: ((getUrlParam('localPreview') ? getLocalConfig() : window.magicDSL) || [])[0] || {},
-  curPage: getUrlParam('page')
-})
-
-magicApp.config.globalProperties.app = app
-magicApp.provide('app', app)
-
-magicApp.mount('#app')
+    magicApp.mount('#app')
+  }
+)

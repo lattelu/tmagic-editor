@@ -8,7 +8,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import UnpluginSvgComponent from 'unplugin-svg-component/vite'
-import { TDesignResolver } from 'unplugin-vue-components/resolvers'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
@@ -32,57 +32,7 @@ export default (configEnv: ConfigEnv): UserConfigExport => {
     base: '/',
     resolve: {
       // alias: { '@': src },
-      alias: [
-        { find: /^~\//, replacement: src + '/' },
-        {
-          find: /^@tmagic\/editor\/src\/theme\/index.scss/,
-          replacement: path.join(__dirname, '../packages/editor/src/theme/index.scss')
-        },
-        {
-          find: /^@tmagic\/core/,
-          replacement: path.join(__dirname, '../packages/core/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/editor/,
-          replacement: path.join(__dirname, '../packages/editor/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/schema/,
-          replacement: path.join(__dirname, '../packages/schema/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/form/,
-          replacement: path.join(__dirname, '../packages/form/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/table/,
-          replacement: path.join(__dirname, '../packages/table/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/stage/,
-          replacement: path.join(__dirname, '../packages/stage/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/utils/,
-          replacement: path.join(__dirname, '../packages/utils/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/design/,
-          replacement: path.join(__dirname, '../packages/design/src/index.ts')
-        },
-        {
-          find: /^@tmagic\/element-plus-adapter/,
-          replacement: path.join(__dirname, '../packages/element-plus-adapter/src/index.ts')
-        },
-        {
-          find: /^vue$/,
-          replacement: path.join(__dirname, 'node_modules/vue/dist/vue.esm-bundler.js')
-        },
-        {
-          find: /^element-plus$/,
-          replacement: path.join(__dirname, 'node_modules/element-plus/es/index.mjs')
-        }
-      ]
+      alias: [{ find: /^~\//, replacement: src + '/' }]
     },
     plugins: [
       // Pages({ dirs: 'src/views', extensions: ['vue'] }),
@@ -118,6 +68,7 @@ export default (configEnv: ConfigEnv): UserConfigExport => {
         imports: ['vue', VueRouterAutoImports, 'vue/macros'],
         eslintrc: { enabled: true },
         resolvers: [
+          ElementPlusResolver()
           // TDesignResolver({
           //   exclude: [/^TM[A-Z]/, /^M[A-Z]/, 'TMagicEditor', 'TMagicCodeEditor'],
           //   esm: true,
@@ -130,12 +81,14 @@ export default (configEnv: ConfigEnv): UserConfigExport => {
       // auto component
       Components({
         resolvers: [
-          // TDesignResolver({
-          //   exclude: [/^TM[A-Z]/, /^M[A-Z]/, 'TMagicEditor', 'TMagicCodeEditor'],
-          //   esm: true,
-          //   library: 'vue-next'
-          // })
+          ElementPlusResolver()
+          //   // TDesignResolver({
+          //   //   exclude: [/^TM[A-Z]/, /^M[A-Z]/, 'TMagicEditor', 'TMagicCodeEditor'],
+          //   //   esm: true,
+          //   //   library: 'vue-next'
+          //   // })
         ],
+        dirs: './src/components',
         dts: './types/component.d.ts'
       }),
 
@@ -207,7 +160,7 @@ export default (configEnv: ConfigEnv): UserConfigExport => {
       sourcemap: true,
       rollupOptions: {
         input: {
-          main: path.resolve(__dirname, 'index.html'),
+          main: getFilePath('index.html'),
           runtime: getFilePath('runtime/index.html')
         }
       }

@@ -1,24 +1,24 @@
 <template>
-  <div>
-    <m-editor
-      v-model="value"
-      ref="editor"
-      :menu="menu"
-      :runtime-url="runtimeUrl"
-      :props-configs="propsConfigs"
-      :props-values="propsValues"
-      :event-method-list="eventMethodList"
-      :component-group-list="componentGroupList"
-      :default-selected="defaultSelected"
-      :moveable-options="moveableOptions"
-      :auto-scroll-into-view="true"
-      :stage-rect="stageRect"
-    >
-      <template #workspace-content>
-        <DeviceGroup v-model="stageRect" />
-      </template>
-    </m-editor>
-  </div>
+  <m-editor
+    style="height: 100vh"
+    v-model="value"
+    ref="editor"
+    :menu="menu"
+    :runtime-url="runtimeUrl"
+    :props-configs="propsConfigs"
+    :props-values="propsValues"
+    :event-method-list="eventMethodList"
+    :component-group-list="componentGroupList"
+    :default-selected="defaultSelected"
+    :moveable-options="moveableOptions"
+    :auto-scroll-into-view="true"
+    :stage-rect="stageRect"
+    :left="350"
+  >
+    <template #workspace-content>
+      <DeviceGroup v-model="stageRect" />
+    </template>
+  </m-editor>
 </template>
 <script setup lang="ts">
 import type { MenuBarData, MoveableOptions } from '@tmagic/editor'
@@ -31,11 +31,11 @@ import serialize from 'serialize-javascript'
 import { PlayIcon, SaveIcon, ViewModuleIcon } from 'tdesign-icons-vue-next'
 import { DialogPlugin, MessagePlugin } from 'tdesign-vue-next'
 
+import DeviceGroup from '~/components/DeviceGroup.vue'
 import { magicPresetConfigs, magicPresetEvents, magicPresetValues } from '~/ui-components'
 
 import componentGroupList from './configs/componentGroupList'
 import dsl from './configs/dsl'
-
 definePage({
   name: 'EditorPage',
   meta: {
@@ -48,7 +48,7 @@ defineOptions({
 })
 const { VITE_RUNTIME_PATH, VITE_ENTRY_PATH } = import.meta.env
 
-const runtimeUrl = `${VITE_RUNTIME_PATH}/playground/index.html`
+const runtimeUrl = `/runtime/index.html`
 
 const router = useRouter()
 const editor = ref<InstanceType<typeof TMagicEditor>>()
@@ -158,14 +158,10 @@ const save = () => {
 }
 
 propsConfigs.value = magicPresetConfigs
-//asyncLoadJs(`${VITE_ENTRY_PATH}/config/index.umd.cjs`).then(() => {
-// })
+
 propsValues.value = magicPresetValues
-//asyncLoadJs(`${VITE_ENTRY_PATH}/value/index.umd.cjs`).then(() => {
-// })
+
 eventMethodList.value = magicPresetEvents
-//asyncLoadJs(`${VITE_ENTRY_PATH}/event/index.umd.cjs`).then(() => {
-// })
 
 save()
 

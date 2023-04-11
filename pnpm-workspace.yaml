@@ -2,4 +2,5 @@ packages:
   - 'packages/*'
   - 'playground'
   - 'runtime/*'
-  - 'tmagic-mini-program'
+  - 'magic-mini-program'
+  - 'magic-mini-admin'
