@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { FullScreen } from '@element-plus/icons-vue';
 import { throttle } from 'lodash-es';
 import serialize from 'serialize-javascript';
@@ -23,7 +23,7 @@ import serialize from 'serialize-javascript';
 import { TMagicButton } from '@tmagic/design';
 
 import MIcon from '@editor/components/Icon.vue';
-import { getConfig } from '@editor/utils/config';
+import { getEditorConfig } from '@editor/utils/config';
 import monaco from '@editor/utils/monaco-editor';
 
 defineOptions({
@@ -76,7 +76,7 @@ const toString = (v: string | any, language: string): string => {
   return value;
 };
 
-const parse = (v: string | any, language: string): any => {
+const parseCode = (v: string | any, language: string): any => {
   if (typeof v !== 'string') {
     return v;
   }
@@ -85,7 +85,7 @@ const parse = (v: string | any, language: string): any => {
     return JSON.parse(v);
   }
 
-  return getConfig('parseDSL')(v);
+  return getEditorConfig('parseDSL')(v);
 };
 
 let vsEditor: monaco.editor.IStandaloneCodeEditor | null = null;
@@ -93,7 +93,7 @@ let vsDiffEditor: monaco.editor.IStandaloneDiffEditor | null = null;
 
 const values = ref('');
 const loading = ref(false);
-const codeEditor = ref<HTMLDivElement>();
+const codeEditorEl = useTemplateRef<HTMLDivElement>('codeEditor');
 
 const resizeObserver = new globalThis.ResizeObserver(
   throttle((): void => {
@@ -122,7 +122,7 @@ const getEditorValue = () =>
   (props.type === 'diff' ? vsDiffEditor?.getModifiedEditor().getValue() : vsEditor?.getValue()) || '';
 
 const init = async () => {
-  if (!codeEditor.value) return;
+  if (!codeEditorEl.value) return;
 
   const options = {
     value: values.value,
@@ -132,9 +132,9 @@ const init = async () => {
   };
 
   if (props.type === 'diff') {
-    vsDiffEditor = monaco.editor.createDiffEditor(codeEditor.value, options);
+    vsDiffEditor = monaco.editor.createDiffEditor(codeEditorEl.value, options);
   } else {
-    vsEditor = monaco.editor.create(codeEditor.value, options);
+    vsEditor = monaco.editor.create(codeEditorEl.value, options);
   }
 
   setEditorValue(props.initValues, props.modifiedValues);
@@ -143,13 +143,13 @@ const init = async () => {
 
   emit('initd', vsEditor);
 
-  codeEditor.value.addEventListener('keydown', (e) => {
+  codeEditorEl.value.addEventListener('keydown', (e) => {
     if (e.keyCode === 83 && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
       e.preventDefault();
       e.stopPropagation();
       const newValue = getEditorValue();
       values.value = newValue;
-      emit('save', props.parse ? parse(newValue, props.language) : newValue);
+      emit('save', props.parse ? parseCode(newValue, props.language) : newValue);
     }
   });
 
@@ -158,12 +158,12 @@ const init = async () => {
       const newValue = getEditorValue();
       if (values.value !== newValue) {
         values.value = newValue;
-        emit('save', props.parse ? parse(newValue, props.language) : newValue);
+        emit('save', props.parse ? parseCode(newValue, props.language) : newValue);
       }
     });
   }
 
-  resizeObserver.observe(codeEditor.value);
+  resizeObserver.observe(codeEditorEl.value);
 };
 
 watch(
