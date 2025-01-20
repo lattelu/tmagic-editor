@@ -24,14 +24,7 @@ import pkg from './package.json';
 
 export default defineConfig(({ mode }) => ({
   resolve: {
-    alias:
-      process.env.NODE_ENV === 'production'
-        ? [{ find: /^@data-source/, replacement: path.join(__dirname, './src') }]
-        : [
-            { find: /^@data-source/, replacement: path.join(__dirname, './src') },
-            { find: /^@tmagic\/dep/, replacement: path.join(__dirname, '../dep/src/index.ts') },
-            { find: /^@tmagic\/schema/, replacement: path.join(__dirname, '../schema/src/index.ts') },
-          ],
+    alias: [{ find: /^@data-source/, replacement: path.join(__dirname, './src') }],
   },
 
   build: {
@@ -52,7 +45,10 @@ export default defineConfig(({ mode }) => ({
         if (mode === 'umd' && id === 'lodash-es') {
           return false;
         }
-        return Object.keys(pkg.dependencies).some((k) => new RegExp(`^${k}`).test(id));
+        return Object.keys({
+          ...pkg.dependencies,
+          ...pkg.peerDependencies,
+        }).some((k) => new RegExp(`^${k}`).test(id));
       },
     },
   },

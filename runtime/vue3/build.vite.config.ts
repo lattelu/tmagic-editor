@@ -25,6 +25,9 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 // @ts-ignore
 import externalGlobals from 'rollup-plugin-external-globals';
 
+const INVALID_CHAR_REGEX = /[\x00-\x1F\x7F<>*#"{}|^[\]`;?:&=+$,]/g;
+const DRIVE_LETTER_REGEX = /^[a-z]:/i;
+
 export default defineConfig(({ mode }) => {
   if (['value', 'config', 'event', 'ds:value', 'ds:config', 'ds:event'].includes(mode)) {
     const capitalToken = mode
@@ -58,10 +61,10 @@ export default defineConfig(({ mode }) => {
       plugins: [
         vue(),
         vueJsx(),
+        externalGlobals({ 'vue-demi': 'VueDemi', vue: 'Vue' }, { exclude: [`./${mode}/index.html`] }),
         legacy({
           targets: ['defaults', 'not IE 11'],
         }),
-        externalGlobals({ vue: 'Vue' }, { exclude: [`./${mode}/index.html`] }),
       ],
 
       root: `./${mode}/`,
@@ -70,10 +73,25 @@ export default defineConfig(({ mode }) => {
 
       base: `/tmagic-editor/playground/runtime/vue3/${mode}`,
 
+      optimizeDeps: {
+        exclude: ['vue-demi'],
+      },
+
       build: {
         emptyOutDir: true,
         sourcemap: true,
         outDir: path.resolve(process.cwd(), `../../playground/public/runtime/vue3/${mode}`),
+        rollupOptions: {
+          external: ['vue', 'vue-demi'],
+          output: {
+            // https://github.com/rollup/rollup/blob/master/src/utils/sanitizeFileName.ts
+            sanitizeFileName(name) {
+              const match = DRIVE_LETTER_REGEX.exec(name);
+              const driveLetter = match ? match[0] : '';
+              return driveLetter + name.slice(driveLetter.length).replace(INVALID_CHAR_REGEX, '');
+            },
+          },
+        },
       },
     };
   }

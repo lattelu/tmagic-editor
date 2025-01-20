@@ -1,12 +1,12 @@
 <template>
   <component
     v-if="disabled || isFocused"
-    :is="getConfig('components')?.autocomplete.component || 'el-autocomplete'"
+    :is="getDesignConfig('components')?.autocomplete.component || 'el-autocomplete'"
     class="tmagic-design-auto-complete"
     ref="autocomplete"
     v-model="state"
     v-bind="
-      getConfig('components')?.autocomplete.props({
+      getDesignConfig('components')?.autocomplete.props({
         disabled,
         size,
         fetchSuggestions: querySearch,
@@ -48,12 +48,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, watch } from 'vue';
+import { computed, inject, nextTick, ref, useTemplateRef, watch } from 'vue';
 import { Coin } from '@element-plus/icons-vue';
 
-import { getConfig, TMagicAutocomplete, TMagicTag } from '@tmagic/design';
+import type { DataSchema, DataSourceSchema } from '@tmagic/core';
+import { getDesignConfig, TMagicAutocomplete, TMagicTag } from '@tmagic/design';
 import type { FieldProps, FormItem } from '@tmagic/form';
-import type { DataSchema, DataSourceSchema } from '@tmagic/schema';
+import { getKeysArray, isNumber } from '@tmagic/utils';
 
 import Icon from '@editor/components/Icon.vue';
 import type { Services } from '@editor/type';
@@ -82,12 +83,12 @@ const emit = defineEmits<{
 
 const { dataSourceService } = inject<Services>('services') || {};
 
-const autocomplete = ref<InstanceType<typeof TMagicAutocomplete>>();
+const autocompleteRef = useTemplateRef<InstanceType<typeof TMagicAutocomplete>>('autocomplete');
 const isFocused = ref(false);
 const state = ref('');
 const displayState = ref<{ value: string; type: 'var' | 'text' }[]>([]);
 
-const input = computed<HTMLInputElement>(() => autocomplete.value?.inputRef?.input);
+const input = computed<HTMLInputElement>(() => autocompleteRef.value?.inputRef?.input);
 const dataSources = computed(() => dataSourceService?.get('dataSources') || []);
 
 const setDisplayState = () => {
@@ -105,9 +106,17 @@ watch(
 );
 
 const mouseupHandler = async () => {
+  const selection = globalThis.document.getSelection();
+  const anchorOffset = selection?.anchorOffset || 0;
+  const focusOffset = selection?.focusOffset || 0;
+
   isFocused.value = true;
   await nextTick();
-  autocomplete.value?.focus();
+  autocompleteRef.value?.focus();
+
+  if (focusOffset && input.value) {
+    input.value.setSelectionRange(anchorOffset, focusOffset);
+  }
 };
 
 const blurHandler = () => {
@@ -209,7 +218,7 @@ const fieldQuerySearch = (
   const dsKey = queryString.substring(leftAngleIndex + 1, dotIndex);
 
   // 可能是xx.xx.xx，存在链式调用
-  const keys = dsKey.split('.');
+  const keys = getKeysArray(dsKey);
 
   // 最前的是数据源id
   const dsId = keys.shift();
@@ -224,6 +233,11 @@ const fieldQuerySearch = (
   // 后面这些是字段
   let key = keys.shift();
   while (key) {
+    if (isNumber(key)) {
+      key = keys.shift();
+      continue;
+    }
+
     for (const field of fields) {
       if (field.name === key) {
         fields = field.fields || [];
