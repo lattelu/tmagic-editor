@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import { App } from 'vue';
+import type { App } from 'vue';
 
 import Container from './containers/Container.vue';
 import Fieldset from './containers/Fieldset.vue';
@@ -91,14 +91,14 @@ export { default as MDynamicField } from './fields/DynamicField.vue';
 
 export const createForm = <T extends [] = []>(config: FormConfig | T) => config;
 
-export interface InstallOptions {
+export interface FormInstallOptions {
   [key: string]: any;
 }
 
-const defaultInstallOpt: InstallOptions = {};
+const defaultInstallOpt: FormInstallOptions = {};
 
 export default {
-  install(app: App, opt: InstallOptions = {}) {
+  install(app: App, opt: FormInstallOptions = {}) {
     const option = Object.assign(defaultInstallOpt, opt);
 
     // eslint-disable-next-line no-param-reassign
@@ -116,6 +116,7 @@ export default {
     app.component('m-form-table', Table);
     app.component('m-form-tab', Tabs);
     app.component('m-fields-text', Text);
+    app.component('m-fields-img-upload', Text);
     app.component('m-fields-number', Number);
     app.component('m-fields-number-range', NumberRange);
     app.component('m-fields-textarea', Textarea);
