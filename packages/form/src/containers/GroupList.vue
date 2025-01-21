@@ -20,12 +20,20 @@
       :disabled="disabled"
       :group-model="model[name]"
       @remove-item="removeHandler"
+      @copy-item="copyHandler"
       @swap-item="swapHandler"
       @change="changeHandler"
       @addDiffCount="onAddDiffCount()"
     ></MFieldsGroupListItem>
 
-    <TMagicButton @click="addHandler" size="small" :disabled="disabled" v-if="addable">新增</TMagicButton>
+    <TMagicButton
+      v-if="addable"
+      type="primary"
+      :size="config.enableToggleMode ? 'small' : 'default'"
+      :disabled="disabled"
+      @click="addHandler"
+      >新增</TMagicButton
+    >
 
     <TMagicButton :icon="Grid" size="small" @click="toggleMode" v-if="config.enableToggleMode">切换为表格</TMagicButton>
   </div>
@@ -34,10 +42,11 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { Grid } from '@element-plus/icons-vue';
+import { cloneDeep } from 'lodash-es';
 
 import { TMagicButton } from '@tmagic/design';
 
-import { FormState, GroupListConfig } from '../schema';
+import type { ContainerChangeEventData, FormState, GroupListConfig } from '../schema';
 import { initValue } from '../utils/form';
 
 import MFieldsGroupListItem from './GroupListItem.vue';
@@ -58,7 +67,10 @@ const props = defineProps<{
   disabled?: boolean;
 }>();
 
-const emit = defineEmits(['change', 'addDiffCount']);
+const emit = defineEmits<{
+  change: [v: any, eventData?: ContainerChangeEventData];
+  addDiffCount: [];
+}>();
 
 const mForm = inject<FormState | undefined>('mForm');
 
@@ -77,10 +89,8 @@ const addable = computed(() => {
   return typeof props.config.addable === 'undefined' ? true : props.config.addable;
 });
 
-const changeHandler = () => {
-  if (!props.name) return false;
-
-  emit('change', props.model[props.name]);
+const changeHandler = (v: any, eventData: ContainerChangeEventData) => {
+  emit('change', props.model, eventData);
 };
 
 const addHandler = async () => {
@@ -105,21 +115,36 @@ const addHandler = async () => {
   });
 
   props.model[props.name].push(groupValue);
+
+  emit('change', props.model[props.name], {
+    changeRecords: [
+      {
+        propPath: `${props.prop}.${props.model[props.name].length - 1}`,
+        value: groupValue,
+      },
+    ],
+  });
 };
 
 const removeHandler = (index: number) => {
   if (!props.name) return false;
 
   props.model[props.name].splice(index, 1);
-  changeHandler();
+  emit('change', props.model[props.name]);
+};
+
+const copyHandler = (index: number) => {
+  props.model[props.name].push(cloneDeep(props.model[props.name][index]));
 };
 
 const swapHandler = (idx1: number, idx2: number) => {
   if (!props.name) return false;
 
+  const { length } = props.model[props.name];
+
   const [currRow] = props.model[props.name].splice(idx1, 1);
-  props.model[props.name].splice(idx2, 0, currRow);
-  changeHandler();
+  props.model[props.name].splice(Math.min(Math.max(idx2, 0), length - 1), 0, currRow);
+  emit('change', props.model[props.name]);
 };
 
 const toggleMode = () => {

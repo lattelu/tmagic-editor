@@ -59,11 +59,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, Ref, ref } from 'vue';
+import { computed, inject, Ref, ref, useTemplateRef } from 'vue';
 
+import type { CodeBlockContent } from '@tmagic/core';
 import { TMagicButton, TMagicDialog, tMagicMessage, tMagicMessageBox, TMagicTag } from '@tmagic/design';
-import { ColumnConfig, FormConfig, FormState, MFormBox } from '@tmagic/form';
-import type { CodeBlockContent } from '@tmagic/schema';
+import {
+  type ContainerChangeEventData,
+  type FormConfig,
+  type FormState,
+  MFormBox,
+  type TableColumnConfig,
+} from '@tmagic/form';
 
 import FloatingBox from '@editor/components/FloatingBox.vue';
 import { useEditorContentHeight } from '@editor/hooks/use-editor-content-height';
@@ -71,7 +77,7 @@ import { useNextFloatBoxPosition } from '@editor/hooks/use-next-float-box-positi
 import { useWindowRect } from '@editor/hooks/use-window-rect';
 import CodeEditor from '@editor/layouts/CodeEditor.vue';
 import type { Services } from '@editor/type';
-import { getConfig } from '@editor/utils/config';
+import { getEditorConfig } from '@editor/utils/config';
 
 defineOptions({
   name: 'MEditorCodeBlockEditor',
@@ -88,7 +94,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  submit: [values: CodeBlockContent];
+  submit: [values: CodeBlockContent, eventData: ContainerChangeEventData];
 }>();
 
 const services = inject<Services>('services');
@@ -98,19 +104,19 @@ const { height: codeBlockEditorHeight } = useEditorContentHeight();
 const difVisible = ref(false);
 const { rect: windowRect } = useWindowRect();
 
-const magicVsEditor = ref<InstanceType<typeof CodeEditor>>();
+const magicVsEditorRef = useTemplateRef<InstanceType<typeof CodeEditor>>('magicVsEditor');
 
 const diffChange = () => {
-  if (!magicVsEditor.value || !formBox.value?.form) {
+  if (!magicVsEditorRef.value || !formBox.value?.form) {
     return;
   }
 
-  formBox.value.form.values.content = magicVsEditor.value.getEditorValue();
+  formBox.value.form.values.content = magicVsEditorRef.value.getEditorValue();
 
   difVisible.value = false;
 };
 
-const defaultParamColConfig: ColumnConfig = {
+const defaultParamColConfig: TableColumnConfig = {
   type: 'row',
   label: '参数类型',
   items: [
@@ -197,7 +203,7 @@ const functionConfig = computed<FormConfig>(() => [
     onChange: (formState: FormState | undefined, code: string) => {
       try {
         // 检测js代码是否存在语法错误
-        getConfig('parseDSL')(code);
+        getEditorConfig('parseDSL')(code);
 
         return code;
       } catch (error: any) {
@@ -209,16 +215,16 @@ const functionConfig = computed<FormConfig>(() => [
   },
 ]);
 
-const submitForm = (values: CodeBlockContent) => {
+const submitForm = (values: CodeBlockContent, data: ContainerChangeEventData) => {
   changedValue.value = undefined;
-  emit('submit', values);
+  emit('submit', values, data);
 };
 
 const errorHandler = (error: any) => {
   tMagicMessage.error(error.message);
 };
 
-const formBox = ref<InstanceType<typeof MFormBox>>();
+const formBox = useTemplateRef<InstanceType<typeof MFormBox>>('formBox');
 
 const changedValue = ref<CodeBlockContent>();
 const changeHandler = (values: CodeBlockContent) => {
@@ -238,7 +244,7 @@ const beforeClose = (done: (cancel?: boolean) => void) => {
       distinguishCancelAndClose: true,
     })
     .then(() => {
-      changedValue.value && submitForm(changedValue.value);
+      changedValue.value && submitForm(changedValue.value, { changeRecords: formBox.value?.form?.changeRecords });
       done();
     })
     .catch((action: string) => {

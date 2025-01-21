@@ -18,7 +18,7 @@
             @select="selectHandle"
             @sort-change="sortChange"
           >
-            <TMagicTableColumn v-if="config.itemExtra" :fixed="'left'" width="30" type="expand">
+            <TMagicTableColumn v-if="config.itemExtra && !config.dropSort" :fixed="'left'" width="30" type="expand">
               <template v-slot="scope">
                 <span v-html="itemExtra(config.itemExtra, scope.$index)" class="m-form-tip"></span>
               </template>
@@ -26,18 +26,32 @@
 
             <TMagicTableColumn
               label="操作"
-              :width="config.operateColWidth || 55"
+              :width="config.operateColWidth || 100"
               align="center"
               :fixed="config.fixed === false ? undefined : 'left'"
             >
               <template v-slot="scope">
                 <slot name="operateCol" :scope="scope"></slot>
-                <TMagicIcon
+                <TMagicButton
                   v-show="showDelete(scope.$index + 1 + pagecontext * pagesize - 1)"
-                  class="m-table-delete-icon"
+                  size="small"
+                  type="danger"
+                  link
+                  title="删除"
+                  :icon="Delete"
                   @click="removeHandler(scope.$index + 1 + pagecontext * pagesize - 1)"
-                  ><Delete
-                /></TMagicIcon>
+                ></TMagicButton>
+
+                <TMagicButton
+                  v-if="copyable(scope.$index + 1 + pagecontext * pagesize - 1)"
+                  link
+                  size="small"
+                  type="primary"
+                  title="复制"
+                  :icon="DocumentCopy"
+                  :disabled="disabled"
+                  @click="copyHandler(scope.$index + 1 + pagecontext * pagesize - 1)"
+                ></TMagicButton>
               </template>
             </TMagicTableColumn>
 
@@ -113,7 +127,7 @@
                     :lastValues="lastData[scope.$index]"
                     :is-compare="isCompare"
                     :size="size"
-                    @change="$emit('change', model[modelName])"
+                    @change="changeHandler"
                     @addDiffCount="onAddDiffCount()"
                   ></Container>
                 </template>
@@ -189,13 +203,12 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, toRefs, watchEffect } from 'vue';
-import { ArrowDown, ArrowUp, Delete, FullScreen, Grid } from '@element-plus/icons-vue';
+import { ArrowDown, ArrowUp, Delete, DocumentCopy, FullScreen, Grid } from '@element-plus/icons-vue';
 import { cloneDeep } from 'lodash-es';
 import Sortable, { SortableEvent } from 'sortablejs';
 
 import {
   TMagicButton,
-  TMagicIcon,
   tMagicMessage,
   TMagicPagination,
   TMagicTable,
@@ -204,9 +217,9 @@ import {
   TMagicUpload,
   useZIndex,
 } from '@tmagic/design';
-import { asyncLoadJs, sleep } from '@tmagic/utils';
+import { asyncLoadJs } from '@tmagic/utils';
 
-import { ColumnConfig, FormState, SortProp, TableConfig } from '../schema';
+import type { ContainerChangeEventData, FormState, SortProp, TableColumnConfig, TableConfig } from '../schema';
 import { display as displayFunc, initValue } from '../utils/form';
 
 import Container from './Container.vue';
@@ -286,11 +299,6 @@ const sortChange = ({ prop, order }: SortProp) => {
   }
 };
 
-const foreUpdate = () => {
-  updateKey.value += 1;
-  setTimeout(() => rowDrop());
-};
-
 const swapArray = (index1: number, index2: number) => {
   props.model[modelName.value].splice(index1, 0, props.model[modelName.value].splice(index2, 1)[0]);
 
@@ -302,32 +310,25 @@ const swapArray = (index1: number, index2: number) => {
   mForm?.$emit('field-change', props.prop, props.model[modelName.value]);
 };
 
+let sortable: Sortable | undefined;
 const rowDrop = () => {
+  sortable?.destroy();
   const tableEl = tMagicTable.value?.instance.$el;
   const tBodyEl = tableEl?.querySelector('.el-table__body > tbody');
-  if (tBodyEl) {
-    // eslint-disable-next-line prefer-destructuring
-    const sortable = Sortable.create(tBodyEl, {
-      onEnd: ({ newIndex, oldIndex }: SortableEvent) => {
-        if (typeof newIndex === 'undefined') return;
-        if (typeof oldIndex === 'undefined') return;
-        swapArray(newIndex, oldIndex);
-        emit('change', props.model[modelName.value]);
-        foreUpdate();
-        sortable.destroy();
-        mForm?.$emit('field-change', props.prop, props.model[modelName.value]);
-        sleep(1000).then(() => {
-          const elTrs = tableEl.querySelectorAll('.el-table__body > tbody > tr');
-          if (elTrs?.[newIndex]) {
-            elTrs[newIndex].style.backgroundColor = 'rgba(243, 89, 59, 0.2)';
-            sleep(1000).then(() => {
-              elTrs[newIndex].style.backgroundColor = '';
-            });
-          }
-        });
-      },
-    });
+  if (!tBodyEl) {
+    return;
   }
+  sortable = Sortable.create(tBodyEl, {
+    draggable: '.tmagic-design-table-row',
+    direction: 'vertical',
+    onEnd: ({ newIndex, oldIndex }: SortableEvent) => {
+      if (typeof newIndex === 'undefined') return;
+      if (typeof oldIndex === 'undefined') return;
+      swapArray(newIndex, oldIndex);
+      emit('change', props.model[modelName.value]);
+      mForm?.$emit('field-change', props.prop, props.model[modelName.value]);
+    },
+  });
 };
 
 const newHandler = async (row?: any) => {
@@ -395,7 +396,15 @@ const newHandler = async (row?: any) => {
   }
 
   props.model[modelName.value].push(inputs);
-  emit('change', props.model[modelName.value]);
+
+  emit('change', props.model[modelName.value], {
+    changeRecords: [
+      {
+        propPath: `${props.prop}.${props.model[modelName.value].length - 1}`,
+        value: inputs,
+      },
+    ],
+  });
 };
 
 onMounted(() => {
@@ -484,7 +493,7 @@ const toggleRowSelection = (row: any, selected: boolean) => {
   tMagicTable.value?.toggleRowSelection.call(tMagicTable.value, row, selected);
 };
 
-const makeConfig = (config: ColumnConfig, row: any) => {
+const makeConfig = (config: TableColumnConfig, row: any) => {
   const newConfig = cloneDeep(config);
   if (typeof config.itemsFunction === 'function') {
     newConfig.items = config.itemsFunction(row);
@@ -500,6 +509,7 @@ const upHandler = (index: number) => {
 
   timer = setTimeout(() => {
     swapArray(index, index - 1);
+    timer = undefined;
   }, 300);
 };
 
@@ -525,6 +535,7 @@ const downHandler = (index: number) => {
 
   timer = setTimeout(() => {
     swapArray(index, index + 1);
+    timer = undefined;
   }, 300);
 };
 
@@ -548,6 +559,22 @@ const showDelete = (index: number) => {
   const deleteFunc = props.config.delete;
   if (deleteFunc && typeof deleteFunc === 'function') {
     return deleteFunc(props.model[modelName.value], index, mForm?.values);
+  }
+  return true;
+};
+
+const copyable = (index: number) => {
+  const copyableFunc = props.config.copyable;
+  if (copyableFunc && typeof copyableFunc === 'function') {
+    return copyableFunc(mForm, {
+      values: mForm?.initValues || {},
+      model: props.model,
+      parent: mForm?.parentValues || {},
+      formValue: mForm?.values || props.model,
+      prop: props.prop,
+      config: props.config,
+      index,
+    });
   }
   return true;
 };
@@ -596,6 +623,10 @@ const handleCurrentChange = (val: number) => {
   pagecontext.value = val - 1;
 };
 
+const copyHandler = (index: number) => {
+  props.model[modelName.value].push(cloneDeep(props.model[modelName.value][index]));
+};
+
 const toggleMode = () => {
   const calcLabelWidth = (label: string) => {
     if (!label) return '0px';
@@ -641,6 +672,10 @@ const getProp = (index: number) => {
 };
 
 const onAddDiffCount = () => emit('addDiffCount');
+
+const changeHandler = (v: any, eventData: ContainerChangeEventData) => {
+  emit('change', props.model, eventData);
+};
 
 defineExpose({
   toggleRowSelection,

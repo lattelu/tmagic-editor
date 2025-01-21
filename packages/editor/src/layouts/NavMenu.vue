@@ -7,10 +7,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, markRaw, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, inject, markRaw, onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
 import { Back, Delete, FullScreen, Grid, Memo, Right, ScaleToOriginal, ZoomIn, ZoomOut } from '@element-plus/icons-vue';
 
-import { NodeType } from '@tmagic/schema';
+import { NodeType } from '@tmagic/core';
 
 import ToolButton from '@editor/components/ToolButton.vue';
 import { ColumnLayout, MenuBarData, MenuButton, MenuComponent, MenuItem, Services } from '@editor/type';
@@ -179,8 +179,10 @@ const buttons = computed(() => {
   return data;
 });
 
+const navMenuEl = useTemplateRef<HTMLDivElement>('navMenu');
+
 const resizeObserver = new ResizeObserver(() => {
-  const rect = navMenu.value?.getBoundingClientRect();
+  const rect = navMenuEl.value?.getBoundingClientRect();
   if (rect) {
     uiService?.set('navMenuRect', {
       left: rect.left,
@@ -190,10 +192,11 @@ const resizeObserver = new ResizeObserver(() => {
     });
   }
 });
-const navMenu = ref<HTMLDivElement>();
+
 onMounted(() => {
-  navMenu.value && resizeObserver.observe(navMenu.value);
+  navMenuEl.value && resizeObserver.observe(navMenuEl.value);
 });
+
 onBeforeUnmount(() => {
   resizeObserver.disconnect();
 });

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import { createDiv, getDocument, injectStyle } from '@tmagic/utils';
+import { createDiv, getDocument, injectStyle } from '@tmagic/core';
 
 import { Mode, ZIndex } from './const';
 import Rule from './Rule';
@@ -170,12 +170,12 @@ export default class StageMask extends Rule {
    * 销毁实例
    */
   public destroy(): void {
+    super.destroy();
+
     this.content?.remove();
     this.page = null;
     this.pageScrollParent = null;
     this.wrapperResizeObserver?.disconnect();
-
-    super.destroy();
   }
 
   public on<Name extends keyof MaskEvents, Param extends MaskEvents[Name]>(
